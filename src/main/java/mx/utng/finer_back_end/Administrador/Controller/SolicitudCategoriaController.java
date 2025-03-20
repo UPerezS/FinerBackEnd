@@ -1,0 +1,40 @@
+package mx.utng.finer_back_end.Administrador.Controller;
+
+import mx.utng.finer_back_end.Administrador.Implement.SolicitudCategoriaServiceImpl;
+import mx.utng.finer_back_end.Documentos.SolicitudCategoriaDocumento;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("api/solicitudes")
+public class SolicitudCategoriaController {
+
+    @Autowired
+    private SolicitudCategoriaServiceImpl solicitudCategoriaService;
+
+    @PutMapping("/aprobar/{id}")
+    public ResponseEntity<String> aprobarCategoria(@PathVariable Integer id) {
+        return solicitudCategoriaService.aprobarDesaprobarCategoria(id, true);
+    }
+
+    @PutMapping("/desaprobar/{id}")
+    public ResponseEntity<String> desaprobarCategoria(@PathVariable Integer id) {
+        return solicitudCategoriaService.aprobarDesaprobarCategoria(id, false);
+    }
+    // Nuevo endpoint para obtener las solicitudes de un instructor
+    @GetMapping("/instructor/{id}")
+    public ResponseEntity<List<SolicitudCategoriaDocumento>> obtenerSolicitudesPorInstructor(@PathVariable Integer id) {
+        List<SolicitudCategoriaDocumento> solicitudes = solicitudCategoriaService.obtenerSolicitudesPorInstructor(id);
+        return ResponseEntity.ok(solicitudes);
+    }
+
+     // Endpoint para ejecutar manualmente la eliminación de solicitudes rechazadas
+     @PostMapping("/eliminar-rechazadas")
+     public ResponseEntity<String> eliminarSolicitudesRechazadas() {
+         solicitudCategoriaService.eliminarSolicitudesCategoriaRechazadasAntiguas();
+         return ResponseEntity.ok("Solicitudes rechazadas antiguas eliminadas con éxito.");
+     }
+}
