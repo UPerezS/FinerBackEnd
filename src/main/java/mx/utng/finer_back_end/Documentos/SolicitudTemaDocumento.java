@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "solicitud_tema") // Nombre de la tabla
+@Table(name = "SolicitudTema") // Nombre de la tabla
 public class SolicitudTemaDocumento {
 
     @Id

@@ -12,7 +12,6 @@ import java.util.List;
 
 @Repository
 public interface CursoAlumnoDao extends JpaRepository<CursoDocumento, Long> {
-
         @Query(value = "SELECT * FROM obtener_detalles_curso_alumno(:p_id_curso)", nativeQuery = true)
         List<Object[]> verCursoDetalles(@Param("p_id_curso") Integer p_id_curso);
 

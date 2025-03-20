@@ -1,5 +1,6 @@
 package mx.utng.finer_back_end.Instructor.Controller;
 
+import mx.utng.finer_back_end.Instructor.Services.InstructorModificarService;
 import mx.utng.finer_back_end.Instructor.Services.InstructorService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ public class InstructorController {
 
     @Autowired
     private InstructorService instructorService;
+    @Autowired InstructorModificarService instructorModificarService;
 
      /**
      * Este método se encarga de hacer un registro en la tabla Usuario utilizando la función registrar_instructor.
@@ -47,6 +49,28 @@ public class InstructorController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error de conexión: " + e.getMessage());
         }
+    }
+    @PutMapping("/editar-cuenta")
+    public ResponseEntity<String> actualizarPerfilInstructor(
+        @RequestParam Integer idUsuario,
+        @RequestParam String nombre, @RequestParam 
+        String apellidoPaterno, 
+        @RequestParam String apellidoMaterno,
+        @RequestParam String correo,
+        @RequestParam String telefono,
+        @RequestParam String direccion,
+        
+         String nombreUsuario 
+    ){
+        try{
+            ResponseEntity<String> mensaje = instructorModificarService.actualizarPerfilInstuctor(idUsuario, nombre, apellidoPaterno,  apellidoMaterno,
+             nombreUsuario,  correo, telefono,direccion);
+            return mensaje;
+        }catch(Exception e){
+            return ResponseEntity.status(500).body("Error de conexión"+e.getMessage());
+        }
+
+
     }
     
 }

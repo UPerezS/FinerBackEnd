@@ -1,5 +1,6 @@
 package mx.utng.finer_back_end.Publicos.Services;
 
+import org.hibernate.annotations.processing.SQL;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import mx.utng.finer_back_end.Publicos.Repository.PublicosRepository;
@@ -15,6 +16,21 @@ public class PublicosService {
         this.jdbcTemplate = jdbcTemplate;
         this.usuarioRepository = usuarioRepository;
     }
+     /** Llama a la función SQL actualizar_contrasenia para cambiar la contraseña del usuario.
+ * @param correoUsuario El correo del usuario que quiere cambiar su contraseña.
+ * @param nuevaContrasenia La nueva contraseña encriptada o en texto plano (según la BD).
+ * @return true si la actualización fue exitosa, false si falló.
+ */
+public boolean actualizarContrasenia(String correoUsuario, String nuevaContrasenia) {
+    try {
+        String sql = "SELECT actualizar_contrasenia(?, ?)";
+        Boolean resultado = jdbcTemplate.queryForObject(sql, Boolean.class, correoUsuario, nuevaContrasenia);
+        return resultado != null && resultado; // Verifica que no sea null y sea true
+    } catch (Exception e) {
+        System.err.println("Error al actualizar contraseña: " + e.getMessage());
+        return false;
+    }
+}
 
     /**
      * Obtiene el correo electrónico del usuario por su ID.

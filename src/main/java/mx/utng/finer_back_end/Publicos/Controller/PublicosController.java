@@ -88,4 +88,39 @@ public class PublicosController {
             return ResponseEntity.status(500).body("Error al autenticar: " + e.getMessage());
         }
     }
+    @PostMapping("/recuperar-contrasenia")
+    public ResponseEntity<Boolean> recuperarContrasenia(
+        @RequestParam String correoUsuario, 
+        @RequestParam String nuevaContrasenia, 
+        @RequestParam String tokenIngresado) {
+    try {
+        // Paso 1: Generar token numérico
+        tokenGenerado = generarTokenNumerico();
+
+        // Paso 2: Enviar token al correo del usuario
+        boolean enviado = emailService.mandarTokenNumerico(correoUsuario, tokenGenerado);
+
+        if (!enviado) {
+            return ResponseEntity.status(500).body(false); // Error al enviar el token
+        }
+
+        // *** Se espera la respuesta del frontend con el token ingresado ***
+
+        // Paso 3: Verificar el token ingresado
+        if (!compararToken(tokenIngresado)) {
+            return ResponseEntity.status(401).body(false); // Token incorrecto
+        }
+
+        // Paso 4: Si el token es válido, actualizar la contraseña en la BD
+        boolean actualizado = usuarioService.actualizarContrasenia(correoUsuario, nuevaContrasenia);
+
+        if (actualizado) {
+            return ResponseEntity.ok(true); // Contraseña actualizada con éxito
+        } else {
+            return ResponseEntity.status(500).body(false); // Error al actualizar contraseña
+        }
+    } catch (Exception e) {
+        return ResponseEntity.status(500).body(false); // Error general
+    }
+}
 }

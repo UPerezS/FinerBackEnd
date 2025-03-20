@@ -33,4 +33,26 @@ public class AlumnoService {
             return ResponseEntity.status(500).body("Error en la DB " + e.getMessage());
         }
     }
+
+     /**
+     * Actualiza la contraseña de un alumno en la base de datos utilizando su correo electrónico.
+     * 
+     * @param correo           Correo electrónico del alumno
+     * @param nuevaContrasenia Nueva contraseña a establecer
+     * @return Mensaje indicando el resultado de la operación
+     */
+    public String actualizarContrasenia(String correo, String nuevaContrasenia) {
+        try {
+            String sql = "SELECT actualizar_contrasenia(?, ?)";
+            return jdbcTemplate.queryForObject(
+                sql, 
+                String.class,
+                correo,
+                nuevaContrasenia
+            );
+        } catch (Exception e) {
+            System.err.println("Error al actualizar contraseña: " + e.getMessage());
+            return "Error al actualizar la contraseña: " + e.getMessage();
+        }
+    }
 }
