@@ -6,13 +6,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Email;
 
 @Entity
-@Table(name = "usuario") //Nombre De la tabla en la BD
+@Table(name = "usuario") // Nombre De la tabla en la BD
 public class UsuarioDocumento {
-    //Campos de la tabla
+    // Campos de la tabla
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
-    private Long idUsuario;
+    private Integer idUsuario;
 
     @NotBlank
     @Column(name = "nombre")
@@ -51,16 +51,33 @@ public class UsuarioDocumento {
     @Column(name = "cedula_pdf")
     private byte[] cedulaPdf; // Puedes descomentar esto si es necesario
 
-    @Column(name = "activo", columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private Boolean activo;
+    @Column(name = "estatus")
+    private String estatus;
+
+    public UsuarioDocumento(String nombre, Integer idRol, String apellidoPaterno,
+            String apellidoMaterno, String correo, String contrasenia,
+            String nombreUsuario, String telefono, String direccion,
+            String estatus) {
+        this.nombre = nombre;
+        this.idRol = idRol;
+        this.apellidoPaterno = apellidoPaterno;
+        this.apellidoMaterno = apellidoMaterno;
+        this.correo = correo;
+        this.contrasenia = contrasenia;
+        this.nombreUsuario = nombreUsuario;
+        this.telefono = telefono;
+        this.direccion = direccion;
+        this.estatus = estatus;
+    }
+
 
     // Getters and Setters de cada uno d elos atributos de la tabla
 
-    public Long getId() {
+    public Integer getId() {
         return idUsuario;
     }
 
-    public void setId(Long idUsuario) {
+    public void setId(Integer idUsuario) {
         this.idUsuario = idUsuario;
     }
 
@@ -137,18 +154,18 @@ public class UsuarioDocumento {
     }
 
     public byte[] getCedulaPdf() {
-         return cedulaPdf;
+        return cedulaPdf;
     }
 
-     public void setCedulaPdf(byte[] cedulaPdf) {
-         this.cedulaPdf = cedulaPdf;
-     }
-
-    public Boolean getActivo() {
-        return activo;
+    public void setCedulaPdf(byte[] cedulaPdf) {
+        this.cedulaPdf = cedulaPdf;
     }
 
-    public void setActivo(Boolean activo) {
-        this.activo = activo;
+    public String getEstatus() {
+        return estatus;
+    }
+
+    public void setEstatus(String estatus) {
+        this.estatus = estatus;
     }
 }
