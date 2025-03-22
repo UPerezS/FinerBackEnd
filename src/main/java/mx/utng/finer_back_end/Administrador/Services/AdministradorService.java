@@ -1,5 +1,8 @@
 package mx.utng.finer_back_end.Administrador.Services;
 import java.util.Map;
+
+import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
+
 import java.util.List;
 public interface AdministradorService {
     
@@ -71,5 +74,8 @@ String aprobarCurso(Integer idSolicitudCurso);
      * @return Lista de usuarios que coinciden con el criterio de búsqueda
      */
     List<Map<String, Object>> buscarUsuarioNombre(String busqueda);
+
+
+    List<UsuarioDocumento> getUsuarios(); 
  
 }
