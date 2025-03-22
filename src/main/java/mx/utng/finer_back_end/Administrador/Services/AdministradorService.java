@@ -76,6 +76,8 @@ String aprobarCurso(Integer idSolicitudCurso);
     List<Map<String, Object>> buscarUsuarioNombre(String busqueda);
 
 
-    List<UsuarioDocumento> getUsuarios(); 
+    List<UsuarioDocumento> getAlumnos(); 
+
+    List<UsuarioDocumento> getInstructores(); 
  
 }
