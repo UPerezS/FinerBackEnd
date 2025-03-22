@@ -536,15 +536,63 @@ public class AdministradorController {
         }
     }
 
-    @GetMapping("/getUsuarios")
+    /**
+     * Endpoint para obtener la lista de alumnos.
+     * 
+     * Este método consulta todos los usuarios que son alumnos en el sistema. Si
+     * no se encuentran alumnos, se devuelve un mensaje indicando que no hay
+     * contenido.
+     * 
+     * @return ResponseEntity con la lista de alumnos o mensaje de error
+     * 
+     *         Posibles respuestas:
+     *         - `200 OK`: Lista de alumnos obtenida correctamente.
+     *         - `204 No Content`: Si no se encuentran alumnos en el sistema.
+     *         - `500 Internal Server Error`: Si ocurre un error al procesar la
+     *         consulta.
+     */
+    @GetMapping("/getUsuarios/alumnos")
     public ResponseEntity<List<UsuarioDocumento>> getUsuarios() {
-        List<UsuarioDocumento> usuarios = administradorService.getUsuarios();
-
-        if (usuarios.isEmpty()) {
-            return ResponseEntity.noContent().build();
+        try {
+            List<UsuarioDocumento> usuarios = administradorService.getAlumnos();
+            if (usuarios.isEmpty()) {
+                return ResponseEntity.noContent().build(); // 204 No Content
+            }
+            return ResponseEntity.ok(usuarios); // 200 OK
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null); // 500 Internal Server Error
         }
+    }
 
-        return ResponseEntity.ok(usuarios); 
+    /**
+     * Endpoint para obtener la lista de instructores.
+     * 
+     * Este método consulta todos los usuarios que son instructores en el sistema.
+     * Si
+     * no se encuentran instructores, se devuelve un mensaje indicando que no hay
+     * contenido.
+     * 
+     * @return ResponseEntity con la lista de instructores o mensaje de error
+     * 
+     *         Posibles respuestas:
+     *         - `200 OK`: Lista de instructores obtenida correctamente.
+     *         - `204 No Content`: Si no se encuentran instructores en el sistema.
+     *         - `500 Internal Server Error`: Si ocurre un error al procesar la
+     *         consulta.
+     */
+    @GetMapping("/getUsuarios/instructores")
+    public ResponseEntity<List<UsuarioDocumento>> getInstructores() {
+        try {
+            List<UsuarioDocumento> usuarios = administradorService.getInstructores();
+            if (usuarios.isEmpty()) {
+                return ResponseEntity.noContent().build(); // 204 No Content
+            }
+            return ResponseEntity.ok(usuarios); // 200 OK
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null); // 500 Internal Server Error
+        }
     }
 
     /**

@@ -11,6 +11,9 @@ import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
 @Repository
 public interface AdministradorDao extends JpaRepository<UsuarioDocumento, Integer>{
     
-    @Query(value = "SELECT * FROM obtener_usuarios_sin_admin()", nativeQuery= true)
-    List<Object[]> getUsuarios();
+    @Query(value = "SELECT * FROM  obtener_alumnos()", nativeQuery= true)
+    List<Object[]> getAlumnos();
+
+    @Query(value = "SELECT * FROM  obtener_instructores()", nativeQuery= true)
+    List<Object[]> getInstructores();
 }

@@ -414,32 +414,60 @@ public class AdministradorServiceImpl implements AdministradorService {
     }
 
     @Override
-    public List<UsuarioDocumento> getUsuarios() {
+    public List<UsuarioDocumento> getAlumnos() {
         // Llamada al DAO para obtener los resultados
-        List<Object[]> resultados = administradorDao.getUsuarios();
+        List<Object[]> resultados = administradorDao.getAlumnos();
     
         List<UsuarioDocumento> usuarios = new ArrayList<>();
     
         // Iterar sobre los resultados y mapearlos a UsuarioDocumento
         for (Object[] row : resultados) {
-            // Crear un nuevo UsuarioDocumento con todos los campos, incluyendo idUsuario
             UsuarioDocumento usuario = new UsuarioDocumento(
-                    (String) row[2],  // nombre (String)
-                    (Integer) row[1], // idRol (Integer)
-                    (String) row[3],  // apellidoPaterno (String)
-                    (String) row[4],  // apellidoMaterno (String)
-                    (String) row[5],  // correo (String)
+                    (String) row[1],  // nombre (String)
+                    null, // idRol (Integer)
+                    (String) row[2],  // apellidoPaterno (String)
+                    (String) row[3],  // apellidoMaterno (String)
+                    (String) row[4],  // correo (String)
                     null,              // contrasenia no está en la consulta
-                    (String) row[6],  // nombreUsuario (String)
-                    (String) row[7],  // telefono (String)
-                    (String) row[8],  // direccion (String)
-                    (String) row[9]   // estatus (String)
+                    (String) row[5],  // nombreUsuario (String)
+                   null,  // telefono (String)
+                    null,  // direccion (String)
+                    (String) row[6],   // estatus (String)
+                    null // cedulaPdf
             );
-            
-            // Asignar el idUsuario desde el primer valor de la fila (row[0])
             usuario.setId((Integer) row[0]);
     
-            // Agregar el usuario a la lista
+            usuarios.add(usuario);
+        }
+    
+        return usuarios;
+    }
+
+    @Override
+    public List<UsuarioDocumento> getInstructores() {
+        // Llamada al DAO para obtener los resultados
+        List<Object[]> resultados = administradorDao.getInstructores();
+    
+        List<UsuarioDocumento> usuarios = new ArrayList<>();
+    
+        // Iterar sobre los resultados y mapearlos a UsuarioDocumento
+        for (Object[] row : resultados) {
+            UsuarioDocumento usuario = new UsuarioDocumento(
+                    (String) row[1],  // nombre (String)
+                    null, // idRol (Integer)
+                    (String) row[2],  // apellidoPaterno (String)
+                    (String) row[3],  // apellidoMaterno (String)
+                    (String) row[4],  // correo (String)
+                    null,              // contrasenia no está en la consulta
+                    (String) row[5],  // nombreUsuario (String)
+                    (String) row[6],  // telefono (String)
+                    (String) row[7],  // direccion (String)
+                    (String) row[9],   // estatus (String)
+                    (byte[])  row[8] // cedulaPdf
+            );
+            
+            usuario.setId((Integer) row[0]);
+    
             usuarios.add(usuario);
         }
     

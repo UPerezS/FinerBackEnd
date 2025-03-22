@@ -57,7 +57,7 @@ public class UsuarioDocumento {
     public UsuarioDocumento(String nombre, Integer idRol, String apellidoPaterno,
             String apellidoMaterno, String correo, String contrasenia,
             String nombreUsuario, String telefono, String direccion,
-            String estatus) {
+            String estatus, byte[] cedulaPdf) {
         this.nombre = nombre;
         this.idRol = idRol;
         this.apellidoPaterno = apellidoPaterno;
@@ -68,6 +68,7 @@ public class UsuarioDocumento {
         this.telefono = telefono;
         this.direccion = direccion;
         this.estatus = estatus;
+        this.cedulaPdf = cedulaPdf;
     }
 
 
