@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
+import mx.utng.finer_back_end.Alumnos.Dao.AlumnoContinuarCursoDao;
 import mx.utng.finer_back_end.Alumnos.Dao.CursoAlumnoDao;
 import mx.utng.finer_back_end.Alumnos.Documentos.CertificadoDetalleDTO;
+import mx.utng.finer_back_end.Alumnos.Documentos.ContinuarCursoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoDetalleAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoNombreAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO; 
@@ -28,6 +30,8 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
     @Autowired
     private CursoAlumnoDao cursoDao;
 
+    @Autowired
+    AlumnoContinuarCursoDao continuarCursoDao;
     @Override
     @Transactional
     public List<CursoDetalleAlumnoDTO> getCurso(Integer idCurso) {
@@ -149,5 +153,21 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
             return curso;
         });
     }
-
+    public List<ContinuarCursoDTO> continuarCurso(Integer idCurso, Integer idUsuarioAlumno) {
+        List<Object[]> result = continuarCursoDao.continuar_curso(idCurso, idUsuarioAlumno);
+        List<ContinuarCursoDTO> cursos = new ArrayList<>();
+        
+        for (Object[] row : result) {
+            ContinuarCursoDTO curso = new ContinuarCursoDTO(
+                (Integer) row[0],     // idTema
+                String.valueOf(row[1]) ,      // nombreTema
+                (String) row[2],      // contenido
+                (String) row[3],      // imagen
+                (Boolean) row[4]      // f
+            );
+            cursos.add(curso);
+        }
+        
+        return cursos;
+    }
 }

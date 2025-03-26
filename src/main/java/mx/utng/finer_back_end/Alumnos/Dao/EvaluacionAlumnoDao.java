@@ -15,4 +15,8 @@ public interface EvaluacionAlumnoDao extends CrudRepository<EvaluacionDocumento,
 
     @Query(value = "SELECT * FROM ver_evaluacion(:idEvaluacion)", nativeQuery = true)
     List<Map<String, Object>> obtenerEvaluacion(@Param("idEvaluacion") Integer idEvaluacion);
+
+    // @Query(value = "SELECT realizar_evaluacion()", nativeQuery = true)
+    // Number guardarRespuestas();
+
 }

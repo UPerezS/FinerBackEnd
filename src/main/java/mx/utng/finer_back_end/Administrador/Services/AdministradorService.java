@@ -1,9 +1,12 @@
 package mx.utng.finer_back_end.Administrador.Services;
+
+import java.util.List;
 import java.util.Map;
+
+import org.springframework.http.ResponseEntity; // Add this import
 
 import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
 
-import java.util.List;
 public interface AdministradorService {
     
     /**
@@ -31,7 +34,16 @@ public interface AdministradorService {
  * @return Mensaje con el resultado de la operación
  */
 String aprobarCurso(Integer idSolicitudCurso);    
-    // Add this method to the interface
+    // Add this method to your interface
+    // Make sure the method signature matches the implementation
+    // Add this method to your AdministradorService class
+    /**
+     * Acepta una solicitud de instructor y crea un nuevo usuario con rol de instructor
+     * 
+     * @param idSolicitudInstructor ID de la solicitud de instructor a aceptar
+     * @return Mensaje con el resultado de la operación
+     */
+    String aceptarInstructor(Integer idSolicitudInstructor);
     /**
      * Modifica la descripción de una categoría existente.
      * 

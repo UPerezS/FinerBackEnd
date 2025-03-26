@@ -41,7 +41,7 @@ public class AlumnoModificarService {
                 // Convertir la contraseña a un hash SHA-256
                 String contraseniaHashed = hashPassword(contrasenia);
                 
-                // Actualizamos directamente la tabla Usuario en lugar de llamar a la función SQL
+                // Actualizamos directamente la tabla Usuario en lugar de llamar a la función sql
                 String sql = "UPDATE Usuario SET nombre = ?, apellido_paterno = ?, " +
                             "apellido_materno = ?, nombre_usuario = ?, correo = ?, " +
                             "contrasenia = ? WHERE id_usuario = ?";

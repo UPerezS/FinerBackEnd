@@ -12,17 +12,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import mx.utng.finer_back_end.Alumnos.Documentos.CertificadoDetalleDTO;
+import mx.utng.finer_back_end.Alumnos.Documentos.ContinuarCursoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoDetalleAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoNombreAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Implement.CursoAlumnoImplement;
 import mx.utng.finer_back_end.Alumnos.Services.CursoAlumnoService;
 import mx.utng.finer_back_end.Alumnos.Services.PdfGenerationService;
-import mx.utng.finer_back_end.Documentos.CursoDocumento;
+
 import mx.utng.finer_back_end.Documentos.TemaDocumento;
 
 import org.springframework.http.MediaType;
@@ -281,4 +283,28 @@ public class CursoAlumnoController {
         }
     }
 
+
+
+        @GetMapping("/continuarCurso/{idCurso}/{idUsuarioAlumno}")
+    public ResponseEntity<List<ContinuarCursoDTO>> continuarCurso(
+        @PathVariable Integer idCurso, 
+        @PathVariable Integer idUsuarioAlumno
+    ) {
+        try{
+        List<ContinuarCursoDTO> temasPendientes = cursoService.continuarCurso(idCurso, idUsuarioAlumno);
+        if (temasPendientes == null || temasPendientes.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró el curso: " + idCurso);
+        }
+        return ResponseEntity.ok(temasPendientes);
+
+    } catch (DataAccessException e) {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al acceder a la base de datos",
+                e);
+    } catch (ResponseStatusException e) {
+        throw e;
+    } catch (Exception e) {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error inesperado", e);
+    }
+}
 }
