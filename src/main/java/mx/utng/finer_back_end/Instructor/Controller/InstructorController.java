@@ -50,6 +50,7 @@ public class InstructorController {
             return ResponseEntity.status(500).body("Error de conexión: " + e.getMessage());
         }
     }
+    
     @PutMapping("/editar-cuenta")
     public ResponseEntity<String> actualizarPerfilInstructor(
         @RequestParam Integer idUsuario,

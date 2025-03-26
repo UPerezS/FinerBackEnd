@@ -86,11 +86,11 @@ public class AdministradorServiceImpl implements AdministradorService {
 
                 System.out.println("Estado actual de la solicitud: " + estadoActual);
 
-                if ("rechazado".equals(estadoActual)) {
+                if ("rechazada".equals(estadoActual)) {
                     return "La solicitud ya ha sido rechazada anteriormente";
                 }
 
-                if ("aprobado".equals(estadoActual)) {
+                if ("aprobada".equals(estadoActual)) {
                     return "No se puede rechazar una solicitud que ya ha sido aprobada";
                 }
 
@@ -282,17 +282,17 @@ public class AdministradorServiceImpl implements AdministradorService {
             // Log for debugging
             System.out.println("Estado actual de la solicitud: " + estadoActual);
 
-            if ("aprobado".equals(estadoActual)) {
+            if ("aprobada".equals(estadoActual)) {
                 return "La solicitud ya ha sido aprobada anteriormente";
             }
 
-            if ("rechazado".equals(estadoActual)) {
+            if ("rechazada".equals(estadoActual)) {
                 return "No se puede aprobar una solicitud que ya ha sido rechazada";
             }
 
             // Update the status to 'aprobado'
             int filasAfectadas = jdbcTemplate.update(
-                    "UPDATE solicitudcurso SET estatus = 'aprobado' WHERE id_solicitud_curso = ?",
+                    "UPDATE solicitudcurso SET estatus = 'aprobada' WHERE id_solicitud_curso = ?",
                     idSolicitudCurso);
 
             if (filasAfectadas > 0) {
