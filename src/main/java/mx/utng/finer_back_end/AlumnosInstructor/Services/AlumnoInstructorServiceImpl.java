@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
+
 @Service
 public class AlumnoInstructorServiceImpl implements AlumnoInstructorService {
 
@@ -35,4 +37,5 @@ public class AlumnoInstructorServiceImpl implements AlumnoInstructorService {
             return false;
         }
     }
+    
 }

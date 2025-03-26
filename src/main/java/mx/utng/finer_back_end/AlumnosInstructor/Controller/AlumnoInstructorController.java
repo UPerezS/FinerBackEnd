@@ -2,13 +2,13 @@ package mx.utng.finer_back_end.AlumnosInstructor.Controller;
 
 import mx.utng.finer_back_end.AlumnosInstructor.Documentos.CursoDetalleProgresoDTO;
 import mx.utng.finer_back_end.AlumnosInstructor.Services.AlumnoInstructorService;
+import mx.utng.finer_back_end.AlumnosInstructor.Services.UsuarioInstructorService;
 import mx.utng.finer_back_end.AlumnosInstructor.Services.ProgresoAlumnoService;
 
-import java.util.Collections;
-import java.util.List;
+import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
 
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +19,9 @@ public class AlumnoInstructorController {
 
     @Autowired
     private AlumnoInstructorService alumnoInstructorService;
+
+    @Autowired
+    private UsuarioInstructorService usuarioInstructorService;
 
     @Autowired
     private ProgresoAlumnoService progresoAlumnoService;
@@ -63,6 +66,15 @@ public class AlumnoInstructorController {
             return ResponseEntity.ok(progreso.get(0).getVPorcentaje());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor");
+        }
+    }
+    @GetMapping("/usuarios/{idUsuario}")
+    public ResponseEntity<UsuarioDocumento> obtenerDatosUsuario(@PathVariable Integer idUsuario) {
+        UsuarioDocumento usuario = usuarioInstructorService.obtenerDatosUsuario(idUsuario);
+        if (usuario != null) {
+            return ResponseEntity.ok(usuario);
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 }

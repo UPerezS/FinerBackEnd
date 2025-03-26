@@ -1,42 +1,28 @@
 package mx.utng.finer_back_end.Administrador.Implement;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import java.util.Map;
-import java.util.List;
 
-import mx.utng.finer_back_end.Administrador.Dao.AdministradorDao;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import mx.utng.finer_back_end.Administrador.Services.AdministradorService;
 import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
-import mx.utng.finer_back_end.Instructor.Documentos.AlumnoDetalleNombreDTO;
-
-import org.springframework.http.HttpHeaders;
 
 @Service
 public class AdministradorServiceImpl implements AdministradorService {
 
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
-
+    
     @Autowired
     private JavaMailSender javaMailSender;
-
-    @Autowired
-    private AdministradorDao administradorDao;
-
-    private final String API_KEY = "fb9a6eb9-05c4-4c7f-8b5b-9900053358cb";
-    private final String API_URL = "https://api.apis.net.mx/v1/cedulaprofesional/";
 
     /**
      * {@inheritDoc}
@@ -47,63 +33,86 @@ public class AdministradorServiceImpl implements AdministradorService {
         try {
             // Llamar a la función de PostgreSQL para eliminar al alumno del curso
             String resultado = jdbcTemplate.queryForObject(
-                    "SELECT eliminar_alumno_curso(?, ?)",
-                    String.class,
-                    matricula,
-                    idCurso);
-
+                "SELECT eliminar_alumno_curso(?, ?)", 
+                String.class, 
+                matricula, 
+                idCurso
+            );
+            
             return resultado;
         } catch (Exception e) {
             // Manejar cualquier excepción que pueda ocurrir
             return "Error al eliminar al alumno del curso: " + e.getMessage();
         }
     }
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
     @Transactional
-    public String rechazarCurso(Long idSolicitudCurso, String correoInstructor, String motivoRechazo,
-            String tituloCurso) {
+    public String rechazarCurso(Long idSolicitudCurso, String motivoRechazo, String tituloCurso) {
         try {
             // Primero verificamos si existe el registro
             Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM solicitudcurso WHERE id_solicitud_curso = ?",
-                    Integer.class,
-                    idSolicitudCurso);
-
+                "SELECT COUNT(*) FROM solicitudcurso WHERE id_solicitud_curso = ?", 
+                Integer.class, 
+                idSolicitudCurso
+            );
+            
             // Log para depuración
             System.out.println("Buscando solicitud con ID: " + idSolicitudCurso);
             System.out.println("Registros encontrados: " + count);
-
+            
             if (count != null && count > 0) {
                 // Verificar el estado actual
                 String estadoActual = jdbcTemplate.queryForObject(
-                        "SELECT estatus FROM solicitudcurso WHERE id_solicitud_curso = ?",
-                        String.class,
-                        idSolicitudCurso);
-
+                    "SELECT estatus FROM solicitudcurso WHERE id_solicitud_curso = ?",
+                    String.class,
+                    idSolicitudCurso
+                );
+                
                 System.out.println("Estado actual de la solicitud: " + estadoActual);
-
+                
                 if ("rechazado".equals(estadoActual)) {
                     return "La solicitud ya ha sido rechazada anteriormente";
                 }
-
+                
                 if ("aprobado".equals(estadoActual)) {
                     return "No se puede rechazar una solicitud que ya ha sido aprobada";
                 }
-
-                // Enviar el correo antes de actualizar el estado, ya que el trigger eliminará
-                // la solicitud
+                
+                // Obtener el correo del instructor y el título del curso desde la base de datos
+                Map<String, Object> solicitudInfo = jdbcTemplate.queryForMap(
+                    "SELECT u.correo, sc.titulo_curso_solicitado " +
+                    "FROM solicitudcurso sc " +
+                    "JOIN usuario u ON sc.id_usuario_instructor = u.id_usuario " +
+                    "WHERE sc.id_solicitud_curso = ?",
+                    idSolicitudCurso
+                );
+                
+                String correoInstructor = (String) solicitudInfo.get("correo");
+                // Si el título no se proporciona, usamos el de la base de datos
+                if (tituloCurso == null || tituloCurso.isEmpty()) {
+                    tituloCurso = (String) solicitudInfo.get("titulo_curso_solicitado");
+                }
+                
+                System.out.println("Correo del instructor: " + correoInstructor);
+                System.out.println("Título del curso: " + tituloCurso);
+                
+                if (correoInstructor == null || correoInstructor.isEmpty()) {
+                    return "No se pudo obtener el correo del instructor";
+                }
+                
+                // Enviar el correo antes de actualizar el estado
                 enviarCorreoRechazo(correoInstructor, motivoRechazo, tituloCurso);
-
-                // El registro existe y está en estado válido para rechazar, procedemos a
-                // actualizarlo
+                
+                // El registro existe y está en estado válido para rechazar, procedemos a actualizarlo
                 int filasAfectadas = jdbcTemplate.update(
-                        "UPDATE solicitudcurso SET estatus = 'rechazado' WHERE id_solicitud_curso = ?",
-                        idSolicitudCurso);
-
+                    "UPDATE solicitudcurso SET estatus = 'rechazado' WHERE id_solicitud_curso = ?", 
+                    idSolicitudCurso
+                );
+                
                 if (filasAfectadas > 0) {
                     return "Rechazado";
                 } else {
@@ -118,15 +127,13 @@ public class AdministradorServiceImpl implements AdministradorService {
             return "Error al rechazar el curso: " + e.getMessage();
         }
     }
-
+    
     /**
-     * Envía un correo electrónico al instructor notificando el rechazo de su
-     * solicitud de curso.
+     * Envía un correo electrónico al instructor notificando el rechazo de su solicitud de curso.
      * 
-     * @param correoInstructor Correo del instructor al que se enviará la
-     *                         notificación
-     * @param motivoRechazo    Motivo por el cual se rechazó el curso
-     * @param tituloCurso      Título del curso rechazado
+     * @param correoInstructor Correo del instructor al que se enviará la notificación
+     * @param motivoRechazo Motivo por el cual se rechazó el curso
+     * @param tituloCurso Título del curso rechazado
      */
     private void enviarCorreoRechazo(String correoInstructor, String motivoRechazo, String tituloCurso) {
         try {
@@ -134,48 +141,107 @@ public class AdministradorServiceImpl implements AdministradorService {
             mensaje.setFrom("finner.oficial.2025@gmail.com");
             mensaje.setTo(correoInstructor);
             mensaje.setSubject("Solicitud de curso rechazada - Finner");
-
+            
             String cuerpoMensaje = "Estimado instructor,\n\n" +
                     "Le informamos que su solicitud para el curso \"" + tituloCurso + "\" ha sido rechazada.\n\n" +
                     "Motivo del rechazo: " + motivoRechazo + "\n\n" +
                     "Si tiene alguna duda o desea más información, por favor contacte al equipo administrativo.\n\n" +
                     "Atentamente,\n" +
                     "El equipo de Finner";
-
+            
             mensaje.setText(cuerpoMensaje);
-
+            
             javaMailSender.send(mensaje);
         } catch (Exception e) {
             // Solo registramos la excepción pero no interrumpimos el flujo
             System.err.println("Error al enviar correo de rechazo: " + e.getMessage());
         }
     }
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
     @Transactional
-    public String crearCategoria(Integer idUsuarioInstructor, Integer idUsuarioAdmin, String nombreCategoria,
-            String descripcion) {
+    public String crearCategoria(Integer idUsuarioInstructor, Integer idUsuarioAdmin, String nombreCategoria, String descripcion) {
         try {
-            // Llamar a la función de PostgreSQL para crear la solicitud de categoría
-            String resultado = jdbcTemplate.queryForObject(
-                    "SELECT solicitar_creacion_categoria(?, ?, ?, ?)",
+            // Verificar si la categoría ya existe
+            Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM categoria WHERE nombre_categoria = ?", 
+                Integer.class, 
+                nombreCategoria
+            );
+            
+            if (count != null && count > 0) {
+                return "Error: Ya existe una categoría con el nombre '" + nombreCategoria + "'";
+            }
+            
+            // Verificar si existe una solicitud de categoría y su estado
+            // Nota: Según la documentación, la solicitud debe estar en la tabla solicitudcategoria
+            // y debe tener un estado 'aprobado' para poder crear la categoría
+            try {
+                String estadoSolicitud = jdbcTemplate.queryForObject(
+                    "SELECT estatus FROM solicitudcategoria WHERE nombre_categoria = ?",
                     String.class,
-                    idUsuarioInstructor,
-                    idUsuarioAdmin,
-                    nombreCategoria,
-                    descripcion);
-
-            return resultado;
+                    nombreCategoria
+                );
+                
+                // Log para depuración
+                System.out.println("Estado de la solicitud para la categoría '" + nombreCategoria + "': " + estadoSolicitud);
+                
+                // Verificar si el estado es 'aprobado'
+                if (estadoSolicitud == null || !"aprobado".equals(estadoSolicitud)) {
+                    return "Error: La solicitud de categoría no está aprobada o no existe";
+                }
+            } catch (Exception e) {
+                // Si ocurre un error al buscar la solicitud, asumimos que no existe
+                System.err.println("Error al verificar el estado de la solicitud: " + e.getMessage());
+                return "Error: No se encontró una solicitud de categoría aprobada";
+            }
+            
+            // Si llegamos aquí, la solicitud existe y está aprobada, procedemos a crear la categoría
+            int filasAfectadas = jdbcTemplate.update(
+                "INSERT INTO categoria (nombre_categoria, descripcion) VALUES (?, ?)", 
+                nombreCategoria, 
+                descripcion
+            );
+            
+            if (filasAfectadas > 0) {
+                // Obtener el ID de la categoría recién creada
+                Integer idCategoria = jdbcTemplate.queryForObject(
+                    "SELECT id_categoria FROM categoria WHERE nombre_categoria = ?", 
+                    Integer.class, 
+                    nombreCategoria
+                );
+                
+                // Nota: La tabla log_categoria no existe en el esquema actual de la base de datos
+                // Por lo tanto, no intentamos registrar en ella y continuamos con el flujo normal
+                // Si en el futuro se implementa esta tabla, se puede descomentar el código siguiente:
+                /*
+                try {
+                    jdbcTemplate.update(
+                        "INSERT INTO log_categoria (id_categoria, id_usuario_instructor, id_usuario_admin, fecha_creacion) VALUES (?, ?, ?, CURRENT_TIMESTAMP)", 
+                        idCategoria, 
+                        idUsuarioInstructor, 
+                        idUsuarioAdmin
+                    );
+                } catch (Exception logError) {
+                    System.err.println("Error al registrar en log_categoria: " + logError.getMessage());
+                }
+                */
+                
+                return "Categoría '" + nombreCategoria + "' creada exitosamente con ID: " + idCategoria;
+            } else {
+                return "Error: No se pudo crear la categoría";
+            }
         } catch (Exception e) {
             // Manejar cualquier excepción que pueda ocurrir
             e.printStackTrace(); // Para ver el error completo en los logs
-            return "Error al crear la solicitud de categoría: " + e.getMessage();
+            return "Error al crear la categoría: " + e.getMessage();
         }
     }
-
+    
+ 
     /**
      * {@inheritDoc}
      */
@@ -183,14 +249,14 @@ public class AdministradorServiceImpl implements AdministradorService {
     @Transactional
     public String modificarCategoriaDescripcion(Integer idCategoria, String nuevaDescripcion) {
         try {
-            // Llamar a la función de PostgreSQL para modificar la descripción de la
-            // categoría
+            // Llamar a la función de PostgreSQL para modificar la descripción de la categoría
             String resultado = jdbcTemplate.queryForObject(
-                    "SELECT modificar_desc_categoria(?, ?)",
-                    String.class,
-                    idCategoria,
-                    nuevaDescripcion);
-
+                "SELECT modificar_desc_categoria(?, ?)", 
+                String.class, 
+                idCategoria, 
+                nuevaDescripcion
+            );
+            
             return resultado;
         } catch (Exception e) {
             // Manejar cualquier excepción que pueda ocurrir
@@ -198,7 +264,7 @@ public class AdministradorServiceImpl implements AdministradorService {
             return "Error al modificar la descripción de la categoría: " + e.getMessage();
         }
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -208,54 +274,58 @@ public class AdministradorServiceImpl implements AdministradorService {
         try {
             // First check if the category exists
             Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM categoria WHERE id_categoria = ?",
-                    Integer.class,
-                    idCategoria);
-
+                "SELECT COUNT(*) FROM categoria WHERE id_categoria = ?", 
+                Integer.class, 
+                idCategoria
+            );
+            
             if (count == null || count == 0) {
                 System.err.println("La categoría con ID " + idCategoria + " no existe.");
                 return false;
             }
-
+            
             // Check if it's the default category
             if (idCategoria == 0) {
                 System.err.println("No se puede eliminar la categoría predeterminada (ID 0).");
                 return false;
             }
-
+            
             // Manually update references before deletion
             int cursosActualizados = jdbcTemplate.update(
-                    "UPDATE curso SET id_categoria = 0 WHERE id_categoria = ?",
-                    idCategoria);
-
+                "UPDATE curso SET id_categoria = 0 WHERE id_categoria = ?", 
+                idCategoria
+            );
+            
             int solicitudesActualizadas = jdbcTemplate.update(
-                    "UPDATE solicitudcurso SET id_categoria = 0 WHERE id_categoria = ?",
-                    idCategoria);
-
+                "UPDATE solicitudcurso SET id_categoria = 0 WHERE id_categoria = ?", 
+                idCategoria
+            );
+            
             System.out.println("Cursos reasignados: " + cursosActualizados);
             System.out.println("Solicitudes reasignadas: " + solicitudesActualizadas);
-
+            
             // Now try to delete the category
             int rowsAffected = jdbcTemplate.update(
-                    "DELETE FROM categoria WHERE id_categoria = ?",
-                    idCategoria);
-
+                "DELETE FROM categoria WHERE id_categoria = ?", 
+                idCategoria
+            );
+            
             System.out.println("Filas afectadas al eliminar categoría: " + rowsAffected);
-
+            
             return rowsAffected > 0;
         } catch (Exception e) {
             // Log the full error for debugging
             System.err.println("Error al eliminar categoría: " + idCategoria);
             e.printStackTrace();
-
+            
             return false;
         }
     }
-
+    
     /**
      * {@inheritDoc}
      */
-
+  
     /**
      * {@inheritDoc}
      */
@@ -265,38 +335,77 @@ public class AdministradorServiceImpl implements AdministradorService {
         try {
             // First check if the course request exists
             Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM solicitudcurso WHERE id_solicitud_curso = ?",
-                    Integer.class,
-                    idSolicitudCurso);
-
+                "SELECT COUNT(*) FROM solicitudcurso WHERE id_solicitud_curso = ?", 
+                Integer.class, 
+                idSolicitudCurso
+            );
+            
             if (count == null || count == 0) {
                 return "La solicitud de curso no existe.";
             }
-
+            
             // Check the current status
             String estadoActual = jdbcTemplate.queryForObject(
-                    "SELECT estatus FROM solicitudcurso WHERE id_solicitud_curso = ?",
-                    String.class,
-                    idSolicitudCurso);
-
+                "SELECT estatus FROM solicitudcurso WHERE id_solicitud_curso = ?",
+                String.class,
+                idSolicitudCurso
+            );
+            
             // Log for debugging
             System.out.println("Estado actual de la solicitud: " + estadoActual);
-
+            
             if ("aprobado".equals(estadoActual)) {
                 return "La solicitud ya ha sido aprobada anteriormente";
             }
-
+            
             if ("rechazado".equals(estadoActual)) {
                 return "No se puede aprobar una solicitud que ya ha sido rechazada";
             }
-
-            // Update the status to 'aprobado'
+            
+            // Get the course request details before updating status
+            Map<String, Object> solicitudCurso = jdbcTemplate.queryForMap(
+                "SELECT id_usuario_instructor, id_categoria, titulo_curso_solicitado, descripcion FROM solicitudcurso WHERE id_solicitud_curso = ?",
+                idSolicitudCurso
+            );
+            
+            // Update the status to 'aprobado' instead of 'aprobada'
             int filasAfectadas = jdbcTemplate.update(
-                    "UPDATE solicitudcurso SET estatus = 'aprobado' WHERE id_solicitud_curso = ?",
-                    idSolicitudCurso);
-
+                "UPDATE solicitudcurso SET estatus = 'aprobado' WHERE id_solicitud_curso = ?", 
+                idSolicitudCurso
+            );
+            
             if (filasAfectadas > 0) {
-                return "El curso ha sido aprobado exitosamente.";
+                // Create the course in the curso table
+                int cursoCreado = jdbcTemplate.update(
+                    "INSERT INTO curso (id_usuario_instructor, id_categoria, titulo_curso, descripcion) " +
+                    "VALUES (?, ?, ?, ?)",
+                    solicitudCurso.get("id_usuario_instructor"),
+                    solicitudCurso.get("id_categoria"),
+                    solicitudCurso.get("titulo_curso_solicitado"),
+                    solicitudCurso.get("descripcion")
+                );
+                
+                if (cursoCreado > 0) {
+                    // Get the ID of the newly created course
+                    Integer idCurso = jdbcTemplate.queryForObject(
+                        "SELECT id_curso FROM curso WHERE titulo_curso = ? AND id_usuario_instructor = ? ORDER BY id_curso DESC LIMIT 1",
+                        Integer.class,
+                        solicitudCurso.get("titulo_curso_solicitado"),
+                        solicitudCurso.get("id_usuario_instructor")
+                    );
+                    
+                    // Update the solicitudcurso with the course ID
+                    jdbcTemplate.update(
+                        "UPDATE solicitudcurso SET id_curso = ? WHERE id_solicitud_curso = ?",
+                        idCurso,
+                        idSolicitudCurso
+                    );
+                    
+                    return "El curso ha sido aprobado exitosamente y creado en el catálogo con ID: " + idCurso;
+                } else {
+                    // Rollback the transaction if the course creation fails
+                    throw new RuntimeException("Error al crear el curso en el catálogo");
+                }
             } else {
                 return "Error al actualizar el registro";
             }
@@ -306,7 +415,7 @@ public class AdministradorServiceImpl implements AdministradorService {
             return "Error al aprobar el curso: " + e.getMessage();
         }
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -314,164 +423,192 @@ public class AdministradorServiceImpl implements AdministradorService {
     @Transactional
     public String bloquearUsuario(String nombreUsuario) {
         try {
-            // Llamar a la función de PostgreSQL para bloquear al usuario
-            String resultado = jdbcTemplate.queryForObject(
-                    "SELECT bloquear_usuario(?)",
-                    String.class,
-                    nombreUsuario);
-
-            return resultado;
+            // Verificar si el usuario existe
+            Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM usuario WHERE nombre_usuario = ?", 
+                Integer.class, 
+                nombreUsuario
+            );
+            
+            if (count == null || count == 0) {
+                return "No se encontró el usuario con el nombre de usuario proporcionado";
+            }
+            
+            // Verificar el rol actual del usuario
+            Integer idRolActual = jdbcTemplate.queryForObject(
+                "SELECT id_rol FROM usuario WHERE nombre_usuario = ?",
+                Integer.class,
+                nombreUsuario
+            );
+            
+            // Verificar si ya está bloqueado (asumiendo que el id_rol para 'bloqueado' es 4)
+            if (idRolActual != null && idRolActual == 4) {
+                return "El usuario ya se encuentra bloqueado";
+            }
+            
+            // Actualizar el rol del usuario a 'bloqueado'
+            int filasAfectadas = jdbcTemplate.update(
+                "UPDATE usuario SET id_rol = 4 WHERE nombre_usuario = ?", 
+                nombreUsuario
+            );
+            
+            if (filasAfectadas > 0) {
+                return "Usuario bloqueado exitosamente";
+            } else {
+                return "Error al bloquear el usuario";
+            }
         } catch (Exception e) {
-            // Manejar cualquier excepción que pueda ocurrir
-            e.printStackTrace(); // Para ver el error completo en los logs
-            return "Error al bloquear al usuario: " + e.getMessage();
+            e.printStackTrace();
+            return "Error al bloquear el usuario: " + e.getMessage();
         }
     }
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    @Transactional(readOnly = true)
     public Map<String, Object> getUsuario(String nombreUsuario) {
         try {
-            // Consultar los datos del usuario
-            Map<String, Object> usuario = jdbcTemplate.queryForMap(
-                    "SELECT u.*, r.nombre_rol " +
-                            "FROM Usuario u " +
-                            "JOIN Rol r ON u.id_rol = r.id_rol " +
-                            "WHERE u.nombre_usuario = ?",
-                    nombreUsuario);
-
-            // Si el usuario tiene número de cédula, validarla
-            if (usuario.containsKey("numero_cedula") && usuario.get("numero_cedula") != null) {
-                String numeroCedula = usuario.get("numero_cedula").toString();
-                Map<String, Object> datosCedula = validarCedulaProfesional(numeroCedula);
-                usuario.put("datos_cedula", datosCedula);
+            // Verificar si el usuario existe
+            Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM usuario WHERE nombre_usuario = ?", 
+                Integer.class, 
+                nombreUsuario
+            );
+            
+            if (count == null || count == 0) {
+                return Map.of("error", "No se encontró el usuario con el nombre de usuario proporcionado");
             }
-
+            
+            // Obtener los datos del usuario
+            Map<String, Object> usuario = jdbcTemplate.queryForMap(
+                "SELECT u.*, r.nombre_rol FROM usuario u JOIN rol r ON u.id_rol = r.id_rol WHERE u.nombre_usuario = ?",
+                nombreUsuario
+            );
+            
+            // Verificar si el usuario es instructor y tiene cédula profesional
+            if (usuario.get("id_rol") != null && Integer.parseInt(usuario.get("id_rol").toString()) == 2) {
+                // Verificar el estado de validación de la cédula
+                String estadoValidacion = jdbcTemplate.queryForObject(
+                    "SELECT estatus FROM validacioncedula WHERE id_usuario = ?",
+                    String.class,
+                    usuario.get("id_usuario")
+                );
+                
+                usuario.put("estado_cedula", estadoValidacion != null ? estadoValidacion : "pendiente");
+            }
+            
             return usuario;
         } catch (Exception e) {
             e.printStackTrace();
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Error al obtener los datos del usuario: " + e.getMessage());
-            return error;
+            return Map.of("error", "Error al obtener los datos del usuario: " + e.getMessage());
         }
     }
-
+    
     /**
-     * Valida una cédula profesional utilizando la API externa.
-     * 
-     * @param numeroCedula Número de cédula a validar
-     * @return Map con la información de la cédula profesional
+     * {@inheritDoc}
      */
-    private Map<String, Object> validarCedulaProfesional(String numeroCedula) {
+    @Override
+    public List<Map<String, Object>> buscarUsuarioNombre(String busqueda) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("X-Api-Key", API_KEY);
-
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    API_URL + numeroCedula,
-                    HttpMethod.GET,
-                    entity,
-                    Map.class);
-
-            return response.getBody();
+            // Buscar usuarios por coincidencia en nombre, apellido paterno o apellido materno
+            String sql = "SELECT u.*, r.nombre_rol FROM usuario u " +
+                         "JOIN rol r ON u.id_rol = r.id_rol " +
+                         "WHERE LOWER(u.nombre) LIKE LOWER(?) OR " +
+                         "LOWER(u.apellido_paterno) LIKE LOWER(?) OR " +
+                         "LOWER(u.apellido_materno) LIKE LOWER(?)";
+            
+            String termino = "%" + busqueda + "%";
+            
+            return jdbcTemplate.queryForList(sql, termino, termino, termino);
         } catch (Exception e) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Error al validar la cédula profesional: " + e.getMessage());
-            return error;
+            e.printStackTrace();
+            return List.of(Map.of("error", "Error al buscar usuarios: " + e.getMessage()));
         }
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<UsuarioDocumento> getAlumnos() {
+        try {
+            // Obtener todos los usuarios con rol de alumno (id_rol = 3)
+            String sql = "SELECT * FROM usuario WHERE id_rol = 3";
+            
+            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+                UsuarioDocumento alumno = new UsuarioDocumento(
+                    rs.getString("nombre"),
+                    rs.getInt("id_rol"),
+                    rs.getString("apellido_paterno"),
+                    rs.getString("apellido_materno"),
+                    rs.getString("correo"),
+                    rs.getString("contrasenia"),
+                    rs.getString("nombre_usuario"),
+                    rs.getString("telefono"),
+                    rs.getString("direccion"),
+                    rs.getString("estatus"),
+                    null // No necesitamos la cédula para alumnos
+                );
+                alumno.setId(rs.getInt("id_usuario"));
+                return alumno;
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<UsuarioDocumento> getInstructores() {
+        try {
+            // Obtener todos los usuarios con rol de instructor (id_rol = 2)
+            String sql = "SELECT * FROM usuario WHERE id_rol = 2";
+            
+            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+                UsuarioDocumento instructor = new UsuarioDocumento(
+                    rs.getString("nombre"),
+                    rs.getInt("id_rol"),
+                    rs.getString("apellido_paterno"),
+                    rs.getString("apellido_materno"),
+                    rs.getString("correo"),
+                    rs.getString("contrasenia"),
+                    rs.getString("nombre_usuario"),
+                    rs.getString("telefono"),
+                    rs.getString("direccion"),
+                    rs.getString("estatus"),
+                    rs.getBytes("cedula_pdf")
+                );
+                instructor.setId(rs.getInt("id_usuario"));
+                return instructor;
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
     /**
      * {@inheritDoc}
      */
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> buscarUsuarioNombre(String busqueda) {
+    public List<Map<String, Object>> verSolicitudInstructor() {
         try {
-            // Preparar el término de búsqueda para SQL LIKE
-            String termino = "%" + busqueda.toLowerCase() + "%";
-
-            // Realizar la búsqueda en la base de datos
             return jdbcTemplate.queryForList(
-                    "SELECT u.*, r.nombre_rol " +
-                            "FROM Usuario u " +
-                            "JOIN Rol r ON u.id_rol = r.id_rol " +
-                            "WHERE LOWER(u.nombre) LIKE ? " +
-                            "   OR LOWER(u.apellido_paterno) LIKE ? " +
-                            "   OR LOWER(u.apellido_materno) LIKE ?",
-                    termino, termino, termino);
+                "SELECT id_solicitud_instructor, id_rol, nombre, " +
+                "apellido_paterno, apellido_materno, correo, " +
+                "nombre_usuario, telefono, direccion, " +
+                "fecha_solicitud, estatus_solicitud " +
+                "FROM SolicitudInstructor " +
+                "ORDER BY fecha_solicitud ASC"
+            );
         } catch (Exception e) {
             e.printStackTrace();
-            // Retornar lista vacía en caso de error
             return new ArrayList<>();
         }
     }
 
-    @Override
-    public List<UsuarioDocumento> getAlumnos() {
-        // Llamada al DAO para obtener los resultados
-        List<Object[]> resultados = administradorDao.getAlumnos();
-    
-        List<UsuarioDocumento> usuarios = new ArrayList<>();
-    
-        // Iterar sobre los resultados y mapearlos a UsuarioDocumento
-        for (Object[] row : resultados) {
-            UsuarioDocumento usuario = new UsuarioDocumento(
-                    (String) row[1],  // nombre (String)
-                    null, // idRol (Integer)
-                    (String) row[2],  // apellidoPaterno (String)
-                    (String) row[3],  // apellidoMaterno (String)
-                    (String) row[4],  // correo (String)
-                    null,              // contrasenia no está en la consulta
-                    (String) row[5],  // nombreUsuario (String)
-                   null,  // telefono (String)
-                    null,  // direccion (String)
-                    (String) row[6],   // estatus (String)
-                    null // cedulaPdf
-            );
-            usuario.setId((Integer) row[0]);
-    
-            usuarios.add(usuario);
-        }
-    
-        return usuarios;
-    }
-
-    @Override
-    public List<UsuarioDocumento> getInstructores() {
-        // Llamada al DAO para obtener los resultados
-        List<Object[]> resultados = administradorDao.getInstructores();
-    
-        List<UsuarioDocumento> usuarios = new ArrayList<>();
-    
-        // Iterar sobre los resultados y mapearlos a UsuarioDocumento
-        for (Object[] row : resultados) {
-            UsuarioDocumento usuario = new UsuarioDocumento(
-                    (String) row[1],  // nombre (String)
-                    null, // idRol (Integer)
-                    (String) row[2],  // apellidoPaterno (String)
-                    (String) row[3],  // apellidoMaterno (String)
-                    (String) row[4],  // correo (String)
-                    null,              // contrasenia no está en la consulta
-                    (String) row[5],  // nombreUsuario (String)
-                    (String) row[6],  // telefono (String)
-                    (String) row[7],  // direccion (String)
-                    (String) row[9],   // estatus (String)
-                    (byte[])  row[8] // cedulaPdf
-            );
-            
-            usuario.setId((Integer) row[0]);
-    
-            usuarios.add(usuario);
-        }
-    
-        return usuarios;
-    }
-    
-} // Closing brace for the class
+}  // Closing brace for the class

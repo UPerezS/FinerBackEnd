@@ -1,68 +1,85 @@
 package mx.utng.finer_back_end.Documentos;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Email;
 
 @Entity
-@Table(name = "usuario") // Nombre De la tabla en la BD
-public class UsuarioDocumento {
-    // Campos de la tabla
+@Table(name = "solicitudinstructor") // Nombre de la tabla
+public class SolicitudInstructorDocumento {
+
+    // Campo: id_solicitud_instructor
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_usuario")
-    private Integer idUsuario;
+    @Column(name = "id_solicitud_instructor")
+    private Integer idSolicitudInstructor;
 
-    @NotBlank
-    @Column(name = "nombre")
-    private String nombre;
-
+    // Campo: id_rol
     @NotNull
     @Column(name = "id_rol")
     private Integer idRol;
 
+    // Campo: nombre
+    @NotBlank
+    @Column(name = "nombre")
+    private String nombre;
+
+    // Campo: apellido_paterno
+    @NotBlank
     @Column(name = "apellido_paterno")
     private String apellidoPaterno;
 
+    // Campo: apellido_materno
+    @NotBlank
     @Column(name = "apellido_materno")
     private String apellidoMaterno;
 
+    // Campo: correo
     @NotBlank
     @Email
-    @Column(name = "correo", unique = true)
+    @Column(name = "correo")
     private String correo;
 
+    // Campo: contrasenia
     @NotBlank
     @Column(name = "contrasenia")
     private String contrasenia;
 
+    // Campo: nombre_usuario
     @NotBlank
-    @Column(name = "nombre_usuario", unique = true)
+    @Column(name = "nombre_usuario")
     private String nombreUsuario;
 
+    // Campo: telefono
     @Column(name = "telefono")
     private String telefono;
 
+    // Campo: direccion
     @Column(name = "direccion")
     private String direccion;
 
-    @Lob
+    // Campo: cedula_pdf
     @Column(name = "cedula_pdf")
-    private byte[] cedulaPdf; // Puedes descomentar esto si es necesario
+    private byte[] cedulaPdf;
 
-    @Column(name = "estatus")
-    private String estatus;
-     // Constructor sin parámetros (obligatorio para JPA)
-     public UsuarioDocumento() {
-    }
+    // Campo: estatus_solicitud
+    @Column(name = "estatus_solicitud")
+    private String estatusSolicitud;
 
-    public UsuarioDocumento(String nombre, Integer idRol, String apellidoPaterno,
-            String apellidoMaterno, String correo, String contrasenia,
-            String nombreUsuario, String telefono, String direccion,
-            String estatus, byte[] cedulaPdf) {
-        this.nombre = nombre;
+    // Constructor con todos los parámetros
+    public SolicitudInstructorDocumento(Integer idSolicitudInstructor, Integer idRol, String nombre,
+            String apellidoPaterno,
+            String apellidoMaterno, String correo, String contrasenia, String nombreUsuario,
+            String telefono, String direccion, byte[] cedulaPdf, String estatusSolicitud) {
+        this.idSolicitudInstructor = idSolicitudInstructor; // Mantener Integer
         this.idRol = idRol;
+        this.nombre = nombre;
         this.apellidoPaterno = apellidoPaterno;
         this.apellidoMaterno = apellidoMaterno;
         this.correo = correo;
@@ -70,27 +87,21 @@ public class UsuarioDocumento {
         this.nombreUsuario = nombreUsuario;
         this.telefono = telefono;
         this.direccion = direccion;
-        this.estatus = estatus;
         this.cedulaPdf = cedulaPdf;
+        this.estatusSolicitud = estatusSolicitud;
     }
 
+    public SolicitudInstructorDocumento( String correo) {
+        this.correo = correo;
+    }
+    // Getters y Setters
 
-    // Getters and Setters de cada uno d elos atributos de la tabla
-
-    public Integer getId() {
-        return idUsuario;
+    public Integer getIdSolicitudInstructor() {
+        return idSolicitudInstructor;
     }
 
-    public void setId(Integer idUsuario) {
-        this.idUsuario = idUsuario;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setIdSolicitudInstructor(Integer idSolicitudInstructor) {
+        this.idSolicitudInstructor = idSolicitudInstructor;
     }
 
     public Integer getIdRol() {
@@ -99,6 +110,14 @@ public class UsuarioDocumento {
 
     public void setIdRol(Integer idRol) {
         this.idRol = idRol;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public String getApellidoPaterno() {
@@ -165,11 +184,11 @@ public class UsuarioDocumento {
         this.cedulaPdf = cedulaPdf;
     }
 
-    public String getEstatus() {
-        return estatus;
+    public String getEstatusSolicitud() {
+        return estatusSolicitud;
     }
 
-    public void setEstatus(String estatus) {
-        this.estatus = estatus;
+    public void setEstatusSolicitud(String estatusSolicitud) {
+        this.estatusSolicitud = estatusSolicitud;
     }
 }

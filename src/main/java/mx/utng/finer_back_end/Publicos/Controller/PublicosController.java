@@ -1,11 +1,18 @@
 package mx.utng.finer_back_end.Publicos.Controller;
 
+import mx.utng.finer_back_end.Publicos.Documentos.CursoDetalleDTO;
 import mx.utng.finer_back_end.Publicos.Services.EmailService;
 import mx.utng.finer_back_end.Publicos.Services.PublicosService;
+import mx.utng.finer_back_end.Publicos.Services.VerCursoService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/token")
@@ -15,10 +22,12 @@ public class PublicosController {
     public static String tokenGenerado = null;
     private final PublicosService usuarioService;
     private final EmailService emailService;
+    private final VerCursoService cursoService;
 
-    public PublicosController(PublicosService usuarioService, EmailService emailService) {
+    public PublicosController(PublicosService usuarioService, EmailService emailService, VerCursoService cursoService) {
         this.usuarioService = usuarioService;
         this.emailService = emailService;
+        this.cursoService = cursoService;
     }
 
     /**
@@ -123,4 +132,32 @@ public class PublicosController {
         return ResponseEntity.status(500).body(false); // Error general
     }
 }
+
+
+/**
+     * Endpoint para obtener todos los cursos aprobados existentes.
+     * Se asume que los cursos en la tabla Curso son los aprobados.
+     * @return ResponseEntity con la lista de cursos o mensaje de error.
+     */
+    @GetMapping("/ver-cursos")
+    public ResponseEntity<?> verCursos() {
+        try {
+            List<CursoDetalleDTO> cursos = cursoService.verCursos();
+
+            if (cursos.isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("mensaje", "No se encontraron cursos aprobados");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            return ResponseEntity.ok(cursos);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("mensaje", "Error al obtener los cursos: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+
+
 }
