@@ -1,6 +1,7 @@
 package mx.utng.finer_back_end.Administrador.Implement;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;  // Add this import
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 import mx.utng.finer_back_end.Administrador.Services.AdministradorService;
 import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
-
+    
 @Service
 public class AdministradorServiceImpl implements AdministradorService {
 
@@ -335,8 +336,8 @@ public class AdministradorServiceImpl implements AdministradorService {
         try {
             // First check if the course request exists
             Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM solicitudcurso WHERE id_solicitud_curso = ?", 
-                Integer.class, 
+                "SELECT COUNT(*) FROM solicitudcurso WHERE id_solicitud_curso = ?",
+                Integer.class,
                 idSolicitudCurso
             );
             
@@ -370,6 +371,7 @@ public class AdministradorServiceImpl implements AdministradorService {
             
             // Update the status to 'aprobado' instead of 'aprobada'
             int filasAfectadas = jdbcTemplate.update(
+
                     "UPDATE solicitudcurso SET estatus = 'aprobada' WHERE id_solicitud_curso = ?",
                     idSolicitudCurso);
 
@@ -589,10 +591,115 @@ public class AdministradorServiceImpl implements AdministradorService {
             return List.of();
         }
     }
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
+    @Transactional
+    public String aceptarInstructor(Integer idSolicitudInstructor) {
+        try {
+            // Verificar si la solicitud existe
+            Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM solicitudinstructor WHERE id_solicitud_instructor = ?",
+                Integer.class,
+                idSolicitudInstructor);
+                
+            if (count == null || count == 0) {
+                return "La solicitud de instructor no existe";
+            }
+            
+            // Verificar el estatus actual
+            String estatus = jdbcTemplate.queryForObject(
+                "SELECT estatus_solicitud FROM solicitudinstructor WHERE id_solicitud_instructor = ?",
+                String.class,
+                idSolicitudInstructor);
+                
+            if (!"pendiente".equals(estatus)) {
+                return "La solicitud ya ha sido procesada anteriormente";
+            }
+            
+            // Obtener datos del instructor antes de actualizar el estatus
+            Map<String, Object> instructor = jdbcTemplate.queryForMap(
+                "SELECT * FROM solicitudinstructor WHERE id_solicitud_instructor = ?",
+                idSolicitudInstructor);
+                
+            // Crear un nuevo usuario con rol de instructor
+            jdbcTemplate.update(
+                "INSERT INTO usuario (id_rol, nombre, apellido_paterno, apellido_materno, correo, contrasenia, nombre_usuario, telefono, estatus) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'activo')",
+                2, // Rol de instructor (id_rol = 2)
+                instructor.get("nombre"),
+                instructor.get("apellido_paterno"),
+                instructor.get("apellido_materno"),
+                instructor.get("correo"),
+                instructor.get("contrasenia"),
+                instructor.get("nombre_usuario"),
+                instructor.get("telefono")
+            );
+            
+            // Llamar a la función de PostgreSQL para actualizar el estado de la solicitud
+            try {
+                jdbcTemplate.update("SELECT aceptar_instructor(?)", idSolicitudInstructor);
+                System.out.println("Estado de solicitud actualizado a 'aprobada' mediante función de base de datos");
+            } catch (Exception e1) {
+                System.err.println("Error al llamar a la función aceptar_instructor: " + e1.getMessage());
+                
+                // Si falla la función, intentamos actualizar manualmente
+                try {
+                    jdbcTemplate.update(
+                        "UPDATE solicitudinstructor SET estatus_solicitud = 'aprobada' WHERE id_solicitud_instructor = ?",
+                        idSolicitudInstructor
+                    );
+                    System.out.println("Estado actualizado manualmente a 'aprobada'");
+                } catch (Exception e2) {
+                    System.err.println("Error al actualizar manualmente: " + e2.getMessage());
+                    // No interrumpimos el flujo ya que el usuario ha sido creado
+                }
+            }
+            
+            // Enviar correo de aceptación
+            enviarCorreoAceptacionInstructor(instructor);
+            
+            return "Instructor aceptado exitosamente";
+        } catch (Exception e) {
+            e.printStackTrace(); // Imprimir la excepción completa para depuración
+            return "Error al aceptar al instructor: " + e.getMessage();
+        }
+    }
+    
+    /**
+     * Envía un correo electrónico al instructor notificando la aprobación de su solicitud.
+     * 
+     * @param solicitudInfo Información de la solicitud del instructor
+     */
+    private void enviarCorreoAceptacionInstructor(Map<String, Object> solicitudInfo) {
+        try {
+            String correoInstructor = (String) solicitudInfo.get("correo");
+            String nombreInstructor = (String) solicitudInfo.get("nombre") + " " + 
+                                     (String) solicitudInfo.get("apellido_paterno");
+            String nombreUsuario = (String) solicitudInfo.get("nombre_usuario");
+            
+            SimpleMailMessage mensaje = new SimpleMailMessage();
+            mensaje.setFrom("finner.oficial.2025@gmail.com");
+            mensaje.setTo(correoInstructor);
+            mensaje.setSubject("¡Felicidades! Su solicitud como instructor ha sido aprobada - Finner");
+            
+            String cuerpoMensaje = "Estimado/a " + nombreInstructor + ",\n\n" +
+                    "Nos complace informarle que su solicitud para convertirse en instructor en la plataforma Finner ha sido aprobada.\n\n" +
+                    "Ahora puede acceder a la plataforma con su nombre de usuario: " + nombreUsuario + "\n\n" +
+                    "Como instructor, podrá crear y gestionar cursos, interactuar con los alumnos y contribuir al crecimiento de nuestra comunidad educativa.\n\n" +
+                    "Si tiene alguna pregunta o necesita asistencia, no dude en contactar a nuestro equipo de soporte.\n\n" +
+                    "¡Le damos la bienvenida al equipo de instructores de Finner!\n\n" +
+                    "Atentamente,\n" +
+                    "El equipo de Finner";
+            
+            mensaje.setText(cuerpoMensaje);
+            
+            javaMailSender.send(mensaje);
+        } catch (Exception e) {
+            // Solo registramos la excepción pero no interrumpimos el flujo
+            System.err.println("Error al enviar correo de aceptación de instructor: " + e.getMessage());
+        }
+    }
+    
     @Transactional(readOnly = true)
     public List<Map<String, Object>> verSolicitudInstructor() {
         try {
@@ -610,4 +717,4 @@ public class AdministradorServiceImpl implements AdministradorService {
         }
     }
 
-}  // Closing brace for the class
+}
