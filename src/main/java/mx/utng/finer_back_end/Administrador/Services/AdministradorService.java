@@ -19,12 +19,11 @@ public interface AdministradorService {
      * Rechaza una solicitud de curso y envía un correo al instructor.
      * 
      * @param idSolicitudCurso ID de la solicitud de curso a rechazar
-     * @param correoInstructor Correo del instructor al que se notificará
      * @param motivoRechazo Motivo por el cual se rechaza el curso
      * @param tituloCurso Título del curso que se está rechazando
      * @return Mensaje indicando el resultado de la operación
      */
-    String rechazarCurso(Long idSolicitudCurso, String correoInstructor, String motivoRechazo, String tituloCurso);
+    String rechazarCurso(Long idSolicitudCurso, String motivoRechazo, String tituloCurso);
 /**
  * Aprueba una solicitud de curso.
  * 
@@ -79,5 +78,12 @@ String aprobarCurso(Integer idSolicitudCurso);
     List<UsuarioDocumento> getAlumnos(); 
 
     List<UsuarioDocumento> getInstructores(); 
+
+     /**
+     * Obtiene todas las solicitudes de usuarios que quieren ser instructores.
+     * 
+     * @return Lista de solicitudes ordenadas de la más antigua a la más reciente
+     */
+    List<Map<String, Object>> verSolicitudInstructor();
  
 }

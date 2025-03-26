@@ -62,5 +62,8 @@ public boolean actualizarContrasenia(String correoUsuario, String nuevaContrasen
             throw new RuntimeException("Error al autenticar usuario", e);
         }
     }
+
+
+    
     
 }
