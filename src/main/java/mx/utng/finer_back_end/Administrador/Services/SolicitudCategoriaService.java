@@ -11,6 +11,7 @@ public interface SolicitudCategoriaService {
 
     //  Método para recuperar solicitudes por instructor
     List<SolicitudCategoriaDocumento> obtenerSolicitudesPorInstructor(Integer idUsuarioInstructor);
-
+    List<SolicitudCategoriaDocumento> obtenerTodasLasSolicitudes();
+    
     void eliminarSolicitudesCategoriaRechazadasAntiguas();
 }

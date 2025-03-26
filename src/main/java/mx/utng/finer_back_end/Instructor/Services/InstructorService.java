@@ -1,9 +1,13 @@
 package mx.utng.finer_back_end.Instructor.Services;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+
+
+
 
 @Service
 public class InstructorService {
@@ -36,4 +40,7 @@ public class InstructorService {
             return ResponseEntity.status(500).body("Error en la DB: " + e.getMessage());
         }
     }
+
+
+ 
 }

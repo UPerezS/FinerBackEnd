@@ -14,6 +14,12 @@ public class SolicitudCategoriaController {
 
     @Autowired
     private SolicitudCategoriaServiceImpl solicitudCategoriaService;
+    
+     // Endpoint para obtener todas las solicitudes
+     @GetMapping("/todas")
+     public List<SolicitudCategoriaDocumento> obtenerTodasLasSolicitudes() {
+         return solicitudCategoriaService.obtenerTodasLasSolicitudes();
+     }
 
     @PutMapping("/aprobar/{id}")
     public ResponseEntity<String> aprobarCategoria(@PathVariable Integer id) {

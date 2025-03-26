@@ -59,6 +59,11 @@ public class SolicitudCategoriaServiceImpl implements SolicitudCategoriaService 
     }
 
     @Override
+    public List<SolicitudCategoriaDocumento> obtenerTodasLasSolicitudes() {
+        return solicitudCategoriaDao.findAll();
+    }
+
+    @Override
     public void eliminarSolicitudesCategoriaRechazadasAntiguas() {
         // Fecha actual menos 30 días
         LocalDate fechaLimite = LocalDate.now().minusDays(30);

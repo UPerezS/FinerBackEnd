@@ -1,12 +1,16 @@
 package mx.utng.finer_back_end.Instructor.Controller;
 
-import mx.utng.finer_back_end.Instructor.Services.InstructorModificarService;
-import mx.utng.finer_back_end.Instructor.Services.InstructorService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import mx.utng.finer_back_end.Instructor.Services.InstructorModificarService;
+import mx.utng.finer_back_end.Instructor.Services.InstructorService;
 
 @RestController
 @RequestMapping("/api/instructor")
@@ -50,7 +54,7 @@ public class InstructorController {
             return ResponseEntity.status(500).body("Error de conexión: " + e.getMessage());
         }
     }
-    
+
     @PutMapping("/editar-cuenta")
     public ResponseEntity<String> actualizarPerfilInstructor(
         @RequestParam Integer idUsuario,
