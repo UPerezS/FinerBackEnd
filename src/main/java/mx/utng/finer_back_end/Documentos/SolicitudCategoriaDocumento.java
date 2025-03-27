@@ -17,8 +17,6 @@ public class SolicitudCategoriaDocumento {
     @Column(name = "id_usuario_instructor", nullable = false)
     private Integer idUsuarioInstructor;
 
-    @Column(name = "id_usuario_admin", nullable = false)
-    private Integer idUsuarioAdmin;
 
     @Column(name = "nombre_categoria", nullable = false)
     private String nombreCategoria;
@@ -47,14 +45,6 @@ public class SolicitudCategoriaDocumento {
 
     public void setIdUsuarioInstructor(Integer idUsuarioInstructor) {
         this.idUsuarioInstructor = idUsuarioInstructor;
-    }
-
-    public Integer getIdUsuarioAdmin() {
-        return idUsuarioAdmin;
-    }
-
-    public void setIdUsuarioAdmin(Integer idUsuarioAdmin) {
-        this.idUsuarioAdmin = idUsuarioAdmin;
     }
 
     public String getNombreCategoria() {

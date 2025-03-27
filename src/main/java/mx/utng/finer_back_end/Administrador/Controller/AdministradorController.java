@@ -598,22 +598,20 @@ public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj)
      *         - `500 Internal Server Error`: Si ocurre un error al procesar la
      *         búsqueda.
      */
-    @PostMapping("/buscarUsuarioNombre")
-    public ResponseEntity<Map<String, Object>> buscarUsuarioNombre(@RequestBody Map<String, Object> obj) {
+    @GetMapping("/buscarUsuario/{nombreUsuario}")
+    public ResponseEntity<Map<String, Object>> buscarUsuarioNombre(@PathVariable String nombreUsuario) {
         Map<String, Object> response = new HashMap<>();
-
+    
         try {
-            String busqueda = (String) obj.get("busqueda");
-
             // Validar que el término de búsqueda esté presente
-            if (busqueda == null || busqueda.trim().isEmpty()) {
+            if (nombreUsuario == null || nombreUsuario.trim().isEmpty()) {
                 response.put("mensaje", "El término de búsqueda es obligatorio");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
-
+    
             // Realizar la búsqueda
-            List<Map<String, Object>> usuarios = administradorService.buscarUsuarioNombre(busqueda.trim());
-
+            List<Map<String, Object>> usuarios = administradorService.buscarUsuarioNombre(nombreUsuario.trim());
+    
             // Preparar la respuesta
             if (usuarios.isEmpty()) {
                 response.put("mensaje", "No se encontraron usuarios que coincidan con la búsqueda");
@@ -622,16 +620,14 @@ public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj)
                 response.put("mensaje", "Usuarios encontrados");
                 response.put("usuarios", usuarios);
             }
-
+    
             return ResponseEntity.ok(response);
-
         } catch (Exception e) {
             response.put("mensaje", "Error al buscar usuarios");
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-    
     /**
      * Endpoint para obtener todas las solicitudes de usuarios que quieren ser instructores.
      * 

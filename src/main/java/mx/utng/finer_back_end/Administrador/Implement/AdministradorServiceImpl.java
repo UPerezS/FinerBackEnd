@@ -479,34 +479,27 @@ public class AdministradorServiceImpl implements AdministradorService {
     }
     
     @Override
-public List<Map<String, Object>> buscarUsuarioNombre(String busqueda) {
-    try {
-   
-        String sql = "SELECT u.*, r.rol FROM usuario u " +
-                     "JOIN rol r ON u.id_rol = r.id_rol " +
-                     "WHERE (LOWER(u.nombre) = LOWER(?) OR " +
-                     "       LOWER(u.apellido_paterno) = LOWER(?) OR " +
-                     "       LOWER(u.apellido_materno) = LOWER(?) OR " +
-                     "       LOWER(CONCAT(u.nombre, ' ', u.apellido_paterno)) = LOWER(?) OR " +
-                     "       LOWER(CONCAT(u.nombre, ' ', u.apellido_materno)) = LOWER(?) OR " +
-                     "       LOWER(CONCAT(u.apellido_paterno, ' ', u.nombre)) = LOWER(?) OR " +
-                     "       LOWER(CONCAT(u.apellido_materno, ' ', u.nombre)) = LOWER(?) OR " +
-                     "       LOWER(CONCAT(u.nombre, ' ', u.apellido_paterno, ' ', u.apellido_materno)) = LOWER(?) OR " +
-                     "       LOWER(CONCAT(u.apellido_paterno, ' ', u.apellido_materno, ' ', u.nombre)) = LOWER(?))";
-        
-      
-        String termino = busqueda.trim();
-        
-   
-        return jdbcTemplate.queryForList(sql, 
-            termino, termino, termino, 
-            termino, termino, termino, 
-            termino, termino, termino);
-    } catch (Exception e) {
-        e.printStackTrace();
-        return List.of(Map.of("error", "Error al buscar usuarios: " + e.getMessage()));
+    public List<Map<String, Object>> buscarUsuarioNombre(String nombreUsuario) {
+        try {
+            // Buscar usuarios por coincidencia en nombre
+            String sql = "SELECT u.*, r.rol FROM usuario u " +
+                         "JOIN rol r ON u.id_rol = r.id_rol " +
+                         "WHERE LOWER(u.nombre) LIKE LOWER(?) OR " +
+                         "LOWER(u.apellido_paterno) LIKE LOWER(?) OR " +
+                         "LOWER(u.apellido_materno) LIKE LOWER(?) OR " +
+                         "LOWER(u.nombre_usuario) LIKE LOWER(?) OR " +
+                         "LOWER(CONCAT(u.nombre, ' ', u.apellido_paterno)) LIKE LOWER(?) OR " +
+                         "LOWER(CONCAT(u.nombre, ' ', u.apellido_materno)) LIKE LOWER(?)";
+            
+            String termino = "%" + nombreUsuario + "%";
+            
+            return jdbcTemplate.queryForList(sql, 
+                termino, termino, termino, termino, termino, termino);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of(Map.of("error", "Error al buscar usuarios: " + e.getMessage()));
+        }
     }
-}
     
     /**
      * {@inheritDoc}
