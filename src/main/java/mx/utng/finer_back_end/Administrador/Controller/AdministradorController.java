@@ -17,14 +17,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import mx.utng.finer_back_end.Administrador.DTO.CategoriaDTO;
 import mx.utng.finer_back_end.Administrador.Services.AdministradorService;
 import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
 
-// Add this annotation at the class level, right before the @RestController annotation
-@RequestMapping("/api/administrador")
+// Change the class-level RequestMapping to be more explicit
 @RestController
+@RequestMapping("/api/admin")
+@CrossOrigin(origins = "*")
 public class AdministradorController {
 
     @Autowired
@@ -441,43 +443,43 @@ public class AdministradorController {
      *         bloqueo.
      */
     @PostMapping("/bloquearUsuario")
-public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj) {
-    Map<String, String> response = new HashMap<>();
-
-    try {
-        String nombreUsuario = (String) obj.get("nombreUsuario");
-
-        if (nombreUsuario == null || nombreUsuario.isEmpty()) {
-            response.put("mensaje", "El nombre de usuario es obligatorio");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
-
-        String resultado = administradorService.bloquearUsuario(nombreUsuario);
-
-        if (resultado.contains("Usuario bloqueado correctamente")) {
-            response.put("mensaje", resultado);
-            return ResponseEntity.ok(response);
-        } else if (resultado.equals("Usuario no encontrado.")) {
-            response.put("mensaje", resultado);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } else if (resultado.equals("El usuario ya está bloqueado.")) {
-            response.put("mensaje", resultado);
-            return ResponseEntity.ok(response);
-        } else {
-            response.put("mensaje", "Error al procesar la solicitud: " + resultado);
+    public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map<String, Object> obj) {
+        Map<String, String> response = new HashMap<>();
+    
+        try {
+            String nombreUsuario = (String) obj.get("nombreUsuario");
+    
+            if (nombreUsuario == null || nombreUsuario.isEmpty()) {
+                response.put("mensaje", "El nombre de usuario es obligatorio");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+    
+            String resultado = administradorService.bloquearUsuario(nombreUsuario);
+    
+            if (resultado.contains("Usuario bloqueado correctamente")) {
+                response.put("mensaje", resultado);
+                return ResponseEntity.ok(response);
+            } else if (resultado.equals("Usuario no encontrado.")) {
+                response.put("mensaje", resultado);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            } else if (resultado.equals("El usuario ya está bloqueado.")) {
+                response.put("mensaje", resultado);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("mensaje", "Error al procesar la solicitud: " + resultado);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+    
+        } catch (DataAccessException e) {
+            response.put("mensaje", "Error en la base de datos al intentar bloquear al usuario");
+            response.put("error", e.getMessage() + ": " + e.getMostSpecificCause().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        } catch (Exception e) {
+            response.put("mensaje", "Error al procesar la solicitud");
+            response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-
-    } catch (DataAccessException e) {
-        response.put("mensaje", "Error en la base de datos al intentar bloquear al usuario");
-        response.put("error", e.getMessage() + ": " + e.getMostSpecificCause().getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    } catch (Exception e) {
-        response.put("mensaje", "Error al procesar la solicitud");
-        response.put("error", e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
-}
     /**
      * Endpoint para obtener los datos completos de un usuario.
      * 
@@ -647,12 +649,12 @@ public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj)
     public ResponseEntity<?> verSolicitudInstructor() {
         try {
             List<Map<String, Object>> solicitudes = administradorService.verSolicitudInstructor();
-            Map<String, Object> response = new HashMap<>();
             
             if (solicitudes.isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
                 response.put("mensaje", "No hay solicitudes de instructor");
                 return ResponseEntity.ok(response);
-            } else { // Correcto, agregamos la lista de solicitudes al mapa
+            } else {
                 return ResponseEntity.ok(solicitudes);
             }
             
@@ -670,8 +672,9 @@ public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj)
      * Endpoint para aceptar una solicitud de instructor.
      * 
      * Este método permite al administrador aprobar una solicitud de instructor.
-     * Al aprobarla, se cambia el estatus de la solicitud a "aprobada" y se crea
-     * un nuevo usuario con rol de instructor en el sistema.
+     * Al aprobarla, se cambia el estatus de la solicitud a "aprobada", se crea
+     * un nuevo usuario con rol de instructor en el sistema y se elimina la solicitud
+     * de la tabla solicitud_instructor.
      *
      * @param payload Objeto que contiene el ID de la solicitud de instructor
      * @return ResponseEntity con el mensaje de éxito o error
@@ -685,7 +688,7 @@ public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj)
     @PostMapping("/aceptar-instructor")
     public ResponseEntity<?> aceptarInstructor(@RequestBody Map<String, Integer> payload) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             Integer idSolicitudInstructor = payload.get("idSolicitudInstructor");
             if (idSolicitudInstructor == null) {
@@ -701,7 +704,15 @@ public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj)
                 response.put("mensaje", resultado);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             } else if (resultado.contains("aceptado exitosamente") || resultado.contains("aprobado exitosamente")) {
-                response.put("mensaje", resultado);
+                // Si la solicitud fue aprobada exitosamente, eliminar la solicitud de la tabla
+                try {
+                    // Modificado para usar el nombre correcto de la tabla: solicitudinstructor
+                    jdbcTemplate.update("DELETE FROM solicitudinstructor WHERE id_solicitud_instructor = ?", idSolicitudInstructor);
+                    response.put("mensaje", resultado + " La solicitud ha sido eliminada de la tabla.");
+                } catch (Exception e) {
+                    response.put("mensaje", resultado + " Nota: No se pudo eliminar la solicitud de la tabla.");
+                    response.put("error_eliminacion", e.getMessage());
+                }
                 return ResponseEntity.ok(response);
             } else {
                 response.put("mensaje", "Error al procesar la solicitud: " + resultado);
@@ -738,7 +749,7 @@ public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj)
     @PostMapping("/aprobar-categoria")
     public ResponseEntity<Map<String, Object>> aprobarCategoria(@RequestBody Map<String, Object> obj) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             // Extraer el ID de la solicitud de categoría
             Integer idSolicitudCategoria = Integer.parseInt(obj.get("idSolicitudCategoria").toString());

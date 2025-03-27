@@ -2,11 +2,17 @@ package mx.utng.finer_back_end.Administrador.Implement;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import jakarta.mail.internet.MimeMessage;
+import java.net.URL;
+import java.net.URLDecoder;
+import jakarta.activation.FileDataSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -245,15 +251,14 @@ public class AdministradorServiceImpl implements AdministradorService {
             if (filasAfectadas > 0) {
                 // Obtener el ID de la categoría recién creada
                 Integer idCategoria = jdbcTemplate.queryForObject(
-                        "SELECT id_categoria FROM categoria WHERE nombre_categoria = ?",
-                        Integer.class,
-                        nombreCategoria);
-
-                // Nota: La tabla log_categoria no existe en el esquema actual de la base de
-                // datos
-                // Por lo tanto, no intentamos registrar en ella y continuamos con el flujo
-                // normal
-
+                    "SELECT id_categoria FROM categoria WHERE nombre_categoria = ?", 
+                    Integer.class, 
+                    nombreCategoria
+                );
+                
+                // Nota: La tabla log_categoria no existe en el esquema actual de la base de datos
+                // Por lo tanto, no intentamos registrar en ella y continuamos con el flujo normal
+                
                 return "Categoría '" + nombreCategoria + "' creada exitosamente con ID: " + idCategoria;
             } else {
                 return "Error: No se pudo crear la categoría";
@@ -382,6 +387,7 @@ public class AdministradorServiceImpl implements AdministradorService {
 
             // Log for debugging
             System.out.println("Estado actual de la solicitud: " + estadoActual);
+            
             if ("aprobada".equals(estadoActual)) {
                 jdbcTemplate.execute("COMMIT");
                 return "La solicitud ya ha sido aprobada anteriormente";
@@ -389,7 +395,6 @@ public class AdministradorServiceImpl implements AdministradorService {
 
             if ("rechazada".equals(estadoActual)) {
                 jdbcTemplate.execute("COMMIT");
-
                 return "No se puede aprobar una solicitud que ya ha sido rechazada";
             }
 
@@ -432,12 +437,13 @@ public class AdministradorServiceImpl implements AdministradorService {
 
             // Update the status and course ID in a single operation
             int filasAfectadas = jdbcTemplate.update(
-                    "UPDATE solicitudcurso SET estatus = 'aprobada', id_curso = ? WHERE id_solicitud_curso = ? AND id_curso IS NULL",
-                    idCurso,
-                    idSolicitudCurso);
-
+                "UPDATE solicitudcurso SET estatus = 'aprobada', id_curso = ? WHERE id_solicitud_curso = ? AND id_curso IS NULL",
+                idCurso,
+                idSolicitudCurso
+            );
+            
             jdbcTemplate.execute("COMMIT");
-
+            
             if (filasAfectadas > 0) {
                 return "El curso ha sido aprobado exitosamente y asociado al catálogo con ID: " + idCurso;
             } else {
@@ -622,11 +628,10 @@ public class AdministradorServiceImpl implements AdministradorService {
             return List.of();
         }
     }
-
+    
     /**
      * {@inheritDoc}
      */
-
     @Override
     @Transactional
     public String aceptarInstructor(Integer idSolicitudInstructor) {
@@ -697,45 +702,65 @@ public class AdministradorServiceImpl implements AdministradorService {
             String nombreInstructor = (String) solicitudInfo.get("nombre") + " " +
                     (String) solicitudInfo.get("apellido_paterno");
             String nombreUsuario = (String) solicitudInfo.get("nombre_usuario");
-
-            SimpleMailMessage mensaje = new SimpleMailMessage();
-            mensaje.setFrom("finner.oficial.2025@gmail.com");
-            mensaje.setTo(correoInstructor);
-            mensaje.setSubject("¡Felicidades! Su solicitud como instructor ha sido aprobada - Finner");
-
-            String cuerpoMensaje = "Estimado/a " + nombreInstructor + ",\n\n" +
-                    "Nos complace informarle que su solicitud para convertirse en instructor en la plataforma Finner ha sido aprobada.\n\n"
-                    +
-                    "Ahora puede acceder a la plataforma con su nombre de usuario: " + nombreUsuario + "\n\n" +
-                    "Como instructor, podrá crear y gestionar cursos, interactuar con los alumnos y contribuir al crecimiento de nuestra comunidad educativa.\n\n"
-                    +
-                    "Si tiene alguna pregunta o necesita asistencia, no dude en contactar a nuestro equipo de soporte.\n\n"
-                    +
-                    "¡Le damos la bienvenida al equipo de instructores de Finner!\n\n" +
-                    "Atentamente,\n" +
-                    "El equipo de Finner";
-
-            mensaje.setText(cuerpoMensaje);
-
+            
+            // Crear un mensaje MIME para soportar contenido HTML
+            MimeMessage mensaje = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true);
+            
+            helper.setFrom("finner.oficial.2025@gmail.com");
+            helper.setTo(correoInstructor);
+            helper.setSubject("¡Felicidades! Su solicitud como instructor ha sido aprobada - Finner");
+            
+            // Intentar cargar el logo
+            URL logoUrl = getClass().getClassLoader().getResource("finer_logo.png");
+            String logoPath = "";
+            if (logoUrl != null) {
+                logoPath = URLDecoder.decode(logoUrl.getPath(), "UTF-8");
+                System.out.println("Ruta decodificada del logo: " + logoPath);
+            } else {
+                System.err.println("No se encontró el recurso finer_logo.png, se enviará sin logo.");
+            }
+            
+            // Construir el contenido HTML del mensaje
+            String cuerpoMensaje = "<html>" +
+                "<body style=\"font-family: Arial, sans-serif; background-color: #f5f5f5; color: #333; padding: 20px;\">" +
+                "<div style=\"background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);\">" +
+                "<h2 style=\"color: #2d6a4f;\">¡Felicidades! Su solicitud como instructor ha sido aprobada</h2>" +
+                "<p>Estimado/a " + nombreInstructor + ",</p>" +
+                "<p>Nos complace informarle que su solicitud para convertirse en instructor en la plataforma Finner ha sido <strong>aprobada</strong>.</p>" +
+                "<p>Ahora puede acceder a la plataforma con su nombre de usuario: <strong>" + nombreUsuario + "</strong></p>" +
+                "<p>Como instructor, podrá crear y gestionar cursos, interactuar con los alumnos y contribuir al crecimiento de nuestra comunidad educativa.</p>" +
+                "<p>Si tiene alguna pregunta o necesita asistencia, no dude en contactar a nuestro equipo de soporte.</p>" +
+                "<p>¡Le damos la bienvenida al equipo de instructores de Finner!</p>" +
+                "<p>Atentamente,</p>" +
+                "<p>El equipo de Finner</p>" +
+                (logoUrl != null ? "<p style=\"text-align:center;\"><img src=\"cid:finerLogo\" alt=\"Finer Logo\" style=\"max-width: 200px;\" /></p>" : "") +
+                "</div>" +
+                "</body>" +
+                "</html>";
+            
+            helper.setText(cuerpoMensaje, true);
+            
+            // Agregar el logo si está disponible
+            if (logoUrl != null) {
+                FileDataSource dataSource = new FileDataSource(logoPath);
+                helper.addInline("finerLogo", dataSource);
+            }
+            
             javaMailSender.send(mensaje);
+            System.out.println("Correo de aceptación enviado a: " + correoInstructor);
         } catch (Exception e) {
             // Solo registramos la excepción pero no interrumpimos el flujo
             System.err.println("Error al enviar correo de aceptación de instructor: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @Override
-
     public List<Map<String, Object>> verSolicitudInstructor() {
-        // Implement the method to get all instructor requests
         try {
-            String sql = "SELECT si.id_solicitud_instructor, si.nombre, si.apellido_paterno, " +
-                    "si.apellido_materno, si.correo, si.telefono, si.nombre_usuario, " +
-                    "si.estatus_solicitud, si.fecha_solicitud " +
-                    "FROM solicitudinstructor si " +
-                    "ORDER BY si.fecha_solicitud DESC";
-
-            return jdbcTemplate.queryForList(sql);
+    
+            return jdbcTemplate.queryForList("SELECT * FROM ver_solicitud_instructor()");
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
@@ -758,7 +783,6 @@ public class AdministradorServiceImpl implements AdministradorService {
 
         return jdbcTemplate.queryForList(sql);
     }
-
 
     /**
      * Aprueba una solicitud de categoría y crea la categoría en el sistema.
