@@ -11,15 +11,14 @@ public class InstructorCursoService {
     /** 
      * @param idUsuarioInstructor /int/ Id del usuario 
      * @param idCategoria /int/ id de la categoria correspondiente 
-     * @param idUsuarioAdministrador /int/
      * @param tituloCurso /String/ Titulo que recibirá el curso
      * @param descripcion /String/ Descripción del curso
      * @return Respuesta con el mensaje de éxito o error.
      */
-    public ResponseEntity<String> registrarCursos(int idUsuarioInstructor, int idUsuarioAdministrador, String tituloCurso, String descripcion,int idCategoria){
+    public ResponseEntity<String> registrarCursos(int idUsuarioInstructor, String tituloCurso, String descripcion,int idCategoria){
     try{
-        String sql = "SELECT solicitar_creacion_curso(?,?,?,?,?)";
-        Object result = jdbcTemplate.queryForObject(sql, Object.class, idUsuarioInstructor, idUsuarioAdministrador, tituloCurso, descripcion,idCategoria);
+        String sql = "SELECT solicitar_creacion_curso(?,?,?,?)";
+        Object result = jdbcTemplate.queryForObject(sql, Object.class, idUsuarioInstructor,  tituloCurso, descripcion,idCategoria);
 
         if (result instanceof String) {
             return ResponseEntity.ok((String) result);  // Si es un String

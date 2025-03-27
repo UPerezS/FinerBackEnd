@@ -23,9 +23,6 @@ public class SolicitudCursoDocumento {
     @Column(name = "id_usuario_instructor")
     private Integer idUsuarioInstructor;
 
-    @NotNull
-    @Column(name = "id_usuario_administrador")
-    private Integer idUsuarioAdministrador;
 
     @NotBlank
     @Column(name = "titulo_curso_solicitado")
@@ -70,13 +67,6 @@ public class SolicitudCursoDocumento {
         this.idUsuarioInstructor = idUsuarioInstructor;
     }
 
-    public Integer getIdUsuarioAdministrador() {
-        return idUsuarioAdministrador;
-    }
-
-    public void setIdUsuarioAdministrador(Integer idUsuarioAdministrador) {
-        this.idUsuarioAdministrador = idUsuarioAdministrador;
-    }
 
     public String getTituloCursoSolicitado() {
         return tituloCursoSolicitado;

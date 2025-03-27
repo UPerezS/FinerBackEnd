@@ -3,9 +3,9 @@ package mx.utng.finer_back_end.Instructor.Documentos;
 public class CategoriaSolicitudDTO {
 
     private String nombreCategoria;  // Nombre de la categoría solicitada
-    private String motivoSolicitud;  // Motivo de la solicitud de la categoría
+    private String descripcion;  // Motivo de la solicitud de la categoría
     private Integer idInstructor;    // ID del instructor solicitante
-    private Integer idUsuarioAdmin;  // ID del administrador 
+    /* private Integer idUsuarioAdmin; */  // ID del administrador 
     private String nombreInstructor;
 
     // Getters y Setters
@@ -17,12 +17,12 @@ public class CategoriaSolicitudDTO {
         this.nombreCategoria = nombreCategoria;
     }
 
-    public String getMotivoSolicitud() {
-        return motivoSolicitud;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setMotivoSolicitud(String motivoSolicitud) {
-        this.motivoSolicitud = motivoSolicitud;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public Integer getIdInstructor() {
@@ -33,13 +33,13 @@ public class CategoriaSolicitudDTO {
         this.idInstructor = idInstructor;
     }
 
-    public Integer getIdUsuarioAdmin() {
+    /* public Integer getIdUsuarioAdmin() {
         return idUsuarioAdmin;
     }
 
     public void setIdUsuarioAdmin(Integer idUsuarioAdmin) {
         this.idUsuarioAdmin = idUsuarioAdmin;
-    }
+    } */
 
     public String getNombreInstructor() {
         return nombreInstructor;
