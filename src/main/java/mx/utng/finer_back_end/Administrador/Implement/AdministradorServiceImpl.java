@@ -4,11 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;  // Add this import
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +33,19 @@ public class AdministradorServiceImpl implements AdministradorService {
 
     /**
      * {@inheritDoc}
+     * 
+     * Este método elimina a un alumno de un curso específico utilizando una función
+     * almacenada en la base de datos PostgreSQL. El proceso consiste en:
+     * 1. Llamar a la función 'eliminar_alumno_curso' de PostgreSQL, pasando la matrícula
+     *    del alumno y el ID del curso como parámetros
+     * 2. La función de base de datos se encarga de verificar si el alumno está inscrito
+     *    en el curso y realizar la eliminación si corresponde
+     * 3. Retornar el resultado de la operación como un mensaje descriptivo
+     * 
+     * @param matricula Identificador único del alumno (matrícula)
+     * @param idCurso Identificador único del curso
+     * @return Mensaje indicando el resultado de la operación: éxito, alumno no inscrito,
+     *         o error en caso de excepción
      */
     @Override
     @Transactional
@@ -50,6 +68,20 @@ public class AdministradorServiceImpl implements AdministradorService {
     
     /**
      * {@inheritDoc}
+     * 
+     * Este método rechaza una solicitud de curso y notifica al instructor por correo electrónico.
+     * El proceso consiste en:
+     * 1. Verificar si la solicitud existe en la base de datos
+     * 2. Comprobar que la solicitud no haya sido rechazada o aprobada previamente
+     * 3. Obtener la información del instructor y del curso desde la base de datos
+     * 4. Enviar un correo electrónico al instructor informándole sobre el rechazo
+     * 5. Actualizar el estado de la solicitud a 'rechazado' en la base de datos
+     * 
+     * @param idSolicitudCurso Identificador único de la solicitud de curso a rechazar
+     * @param motivoRechazo Texto que explica la razón por la cual se rechaza el curso
+     * @param tituloCurso Título del curso que se está rechazando (opcional, se puede obtener de la BD)
+     * @return Mensaje indicando el resultado de la operación: "Rechazado" en caso de éxito,
+     *         mensaje de error específico en caso contrario
      */
     @Override
     @Transactional
@@ -165,7 +197,7 @@ public class AdministradorServiceImpl implements AdministradorService {
      */
     @Override
     @Transactional
-    public String crearCategoria(Integer idUsuarioInstructor, Integer idUsuarioAdmin, String nombreCategoria, String descripcion) {
+    public String crearCategoria(Integer idUsuarioInstructor, String nombreCategoria, String descripcion) {
         try {
             // Verificar si la categoría ya existe
             Integer count = jdbcTemplate.queryForObject(
@@ -216,7 +248,12 @@ public class AdministradorServiceImpl implements AdministradorService {
                     nombreCategoria
                 );
                 
+<<<<<<< HEAD
+                // Nota: La tabla log_categoria no existe en el esquema actual de la base de datos
+                // Por lo tanto, no intentamos registrar en ella y continuamos con el flujo normal
+=======
                 
+>>>>>>> 5c33c0f89bd33a731df0256c3f3e2a3a81fceee2
                 
                 return "Categoría '" + nombreCategoria + "' creada exitosamente con ID: " + idCategoria;
             } else {
@@ -332,72 +369,127 @@ public class AdministradorServiceImpl implements AdministradorService {
                 return "La solicitud de curso no existe.";
             }
             
-            // Check the current status
-            String estadoActual = jdbcTemplate.queryForObject(
-                "SELECT estatus FROM solicitudcurso WHERE id_solicitud_curso = ?",
-                String.class,
+            // Start transaction and acquire exclusive lock on the solicitudcurso row
+            jdbcTemplate.execute("BEGIN");
+            
+            // Lock the solicitudcurso row first to prevent concurrent processing
+            Map<String, Object> solicitudInfo = jdbcTemplate.queryForMap(
+                "SELECT id_solicitud_curso, estatus, id_curso FROM solicitudcurso WHERE id_solicitud_curso = ? FOR UPDATE",
                 idSolicitudCurso
             );
             
+            // Check if the course has already been created for this request
+            Integer idCursoExistente = (Integer) solicitudInfo.get("id_curso");
+            if (idCursoExistente != null) {
+                jdbcTemplate.execute("COMMIT");
+                return "El curso ya ha sido creado anteriormente con ID: " + idCursoExistente;
+            }
+            
+            // Check the current status
+            String estadoActual = (String) solicitudInfo.get("estatus");
+            
             // Log for debugging
             System.out.println("Estado actual de la solicitud: " + estadoActual);
+<<<<<<< HEAD
+            
+            if ("aprobada".equals(estadoActual)) {
+                jdbcTemplate.execute("COMMIT");
+                return "La solicitud ya ha sido aprobada anteriormente";
+            }
+            
+            if ("rechazada".equals(estadoActual)) {
+                jdbcTemplate.execute("COMMIT");
+=======
 
             if ("aprobada".equals(estadoActual)) {
                 return "La solicitud ya ha sido aprobada anteriormente";
             }
 
             if ("rechazada".equals(estadoActual)) {
+>>>>>>> 5c33c0f89bd33a731df0256c3f3e2a3a81fceee2
                 return "No se puede aprobar una solicitud que ya ha sido rechazada";
             }
             
-            // Get the course request details before updating status
+            // Get the course request details
             Map<String, Object> solicitudCurso = jdbcTemplate.queryForMap(
                 "SELECT id_usuario_instructor, id_categoria, titulo_curso_solicitado, descripcion FROM solicitudcurso WHERE id_solicitud_curso = ?",
                 idSolicitudCurso
             );
             
-            // Update the status to 'aprobado' instead of 'aprobada'
+            // Check if a course with the same title and instructor already exists
+            List<Map<String, Object>> existingCourses = jdbcTemplate.queryForList(
+                "SELECT id_curso FROM curso WHERE titulo_curso = ? AND id_usuario_instructor = ? FOR UPDATE",
+                solicitudCurso.get("titulo_curso_solicitado"),
+                solicitudCurso.get("id_usuario_instructor")
+            );
+            
+            Integer idCurso;
+            
+            if (!existingCourses.isEmpty()) {
+                // Course with same title and instructor already exists, get its ID
+                idCurso = (Integer) existingCourses.get(0).get("id_curso");
+                System.out.println("Se encontró un curso existente con el mismo título e instructor, ID: " + idCurso);
+            } else {
+                // Create the course in the curso table
+                KeyHolder keyHolder = new GeneratedKeyHolder();
+                
+                jdbcTemplate.update(connection -> {
+                    PreparedStatement ps = connection.prepareStatement(
+                        "INSERT INTO curso (id_usuario_instructor, id_categoria, titulo_curso, descripcion) VALUES (?, ?, ?, ?)",
+                        new String[] {"id_curso"}
+                    );
+                    ps.setObject(1, solicitudCurso.get("id_usuario_instructor"));
+                    ps.setObject(2, solicitudCurso.get("id_categoria"));
+                    ps.setString(3, (String) solicitudCurso.get("titulo_curso_solicitado"));
+                    ps.setString(4, (String) solicitudCurso.get("descripcion"));
+                    return ps;
+                }, keyHolder);
+                
+                // Get the ID directly from the key holder
+                idCurso = (Integer) keyHolder.getKeys().get("id_curso");
+                System.out.println("Nuevo curso creado con ID: " + idCurso);
+            }
+            
+            // Update the status and course ID in a single operation
             int filasAfectadas = jdbcTemplate.update(
+<<<<<<< HEAD
+                "UPDATE solicitudcurso SET estatus = 'aprobada', id_curso = ? WHERE id_solicitud_curso = ? AND id_curso IS NULL",
+                idCurso,
+                idSolicitudCurso
+            );
+            
+            jdbcTemplate.execute("COMMIT");
+            
+=======
 
                     "UPDATE solicitudcurso SET estatus = 'aprobada' WHERE id_solicitud_curso = ?",
                     idSolicitudCurso);
 
+>>>>>>> 5c33c0f89bd33a731df0256c3f3e2a3a81fceee2
             if (filasAfectadas > 0) {
-                // Create the course in the curso table
-                int cursoCreado = jdbcTemplate.update(
-                    "INSERT INTO curso (id_usuario_instructor, id_categoria, titulo_curso, descripcion) " +
-                    "VALUES (?, ?, ?, ?)",
-                    solicitudCurso.get("id_usuario_instructor"),
-                    solicitudCurso.get("id_categoria"),
-                    solicitudCurso.get("titulo_curso_solicitado"),
-                    solicitudCurso.get("descripcion")
+                return "El curso ha sido aprobado exitosamente y asociado al catálogo con ID: " + idCurso;
+            } else {
+                // The update didn't affect any rows, which means another transaction might have updated it
+                Integer idCursoFinal = jdbcTemplate.queryForObject(
+                    "SELECT id_curso FROM solicitudcurso WHERE id_solicitud_curso = ?",
+                    Integer.class,
+                    idSolicitudCurso
                 );
                 
-                if (cursoCreado > 0) {
-                    // Get the ID of the newly created course
-                    Integer idCurso = jdbcTemplate.queryForObject(
-                        "SELECT id_curso FROM curso WHERE titulo_curso = ? AND id_usuario_instructor = ? ORDER BY id_curso DESC LIMIT 1",
-                        Integer.class,
-                        solicitudCurso.get("titulo_curso_solicitado"),
-                        solicitudCurso.get("id_usuario_instructor")
-                    );
-                    
-                    // Update the solicitudcurso with the course ID
-                    jdbcTemplate.update(
-                        "UPDATE solicitudcurso SET id_curso = ? WHERE id_solicitud_curso = ?",
-                        idCurso,
-                        idSolicitudCurso
-                    );
-                    
-                    return "El curso ha sido aprobado exitosamente y creado en el catálogo con ID: " + idCurso;
+                if (idCursoFinal != null) {
+                    return "El curso ya ha sido asociado a esta solicitud con ID: " + idCursoFinal;
                 } else {
-                    // Rollback the transaction if the course creation fails
-                    throw new RuntimeException("Error al crear el curso en el catálogo");
+                    throw new RuntimeException("Error al actualizar el estado de la solicitud");
                 }
-            } else {
-                return "Error al actualizar el registro";
             }
         } catch (Exception e) {
+            // Rollback in case of error
+            try {
+                jdbcTemplate.execute("ROLLBACK");
+            } catch (Exception rollbackEx) {
+                System.err.println("Error during rollback: " + rollbackEx.getMessage());
+            }
+            
             // Manejar cualquier excepción que pueda ocurrir
             e.printStackTrace(); // Para ver el error completo en los logs
             return "Error al aprobar el curso: " + e.getMessage();
@@ -564,6 +656,13 @@ public class AdministradorServiceImpl implements AdministradorService {
             return List.of();
         }
     }
+<<<<<<< HEAD
+    
+    /**
+     * {@inheritDoc}
+     */
+=======
+>>>>>>> 5c33c0f89bd33a731df0256c3f3e2a3a81fceee2
     @Override
     @Transactional
     public String aceptarInstructor(Integer idSolicitudInstructor) {
@@ -626,7 +725,7 @@ public class AdministradorServiceImpl implements AdministradorService {
     }
     
     /**
-     * Envía un correo electrónico al instructor notificando la aprobación de su solicitud.
+     * Envía un correo electrónico al instructor notificando la aprobación de su solicitud de curso.
      * 
      * @param solicitudInfo Información de la solicitud del instructor
      */
@@ -660,23 +759,102 @@ public class AdministradorServiceImpl implements AdministradorService {
         }
     }
 
+<<<<<<< HEAD
+    @Override
+=======
 
     
     @Transactional(readOnly = true)
+>>>>>>> 5c33c0f89bd33a731df0256c3f3e2a3a81fceee2
     public List<Map<String, Object>> verSolicitudInstructor() {
+        // Implement the method to get all instructor requests
         try {
-            return jdbcTemplate.queryForList(
-                "SELECT id_solicitud_instructor, id_rol, nombre, " +
-                "apellido_paterno, apellido_materno, correo, " +
-                "nombre_usuario, telefono, direccion, " +
-                "fecha_solicitud, estatus_solicitud " +
-                "FROM SolicitudInstructor " +
-                "ORDER BY fecha_solicitud ASC"
-            );
+            String sql = "SELECT si.id_solicitud_instructor, si.nombre, si.apellido_paterno, " +
+                        "si.apellido_materno, si.correo, si.telefono, si.nombre_usuario, " +
+                        "si.estatus_solicitud, si.fecha_solicitud " +
+                        "FROM solicitudinstructor si " +
+                        "ORDER BY si.fecha_solicitud DESC";
+            
+            return jdbcTemplate.queryForList(sql);
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
         }
     }
+    
+    /**
+     * Obtiene todas las solicitudes de categoría.
+     * 
+     * @return Lista de solicitudes de categoría
+     */
+    @Override
+    public List<Map<String, Object>> verSolicitudesCategoria() {
+        String sql = "SELECT sc.id_solicitud_categoria, sc.id_usuario_instructor, sc.id_usuario_admin, " +
+                    "sc.nombre_categoria, sc.descripcion, sc.estatus, sc.fecha_solicitud, " +
+                    "u.nombre, u.apellido_paterno, u.apellido_materno, u.correo " +
+                    "FROM solicitudcategoria sc " +
+                    "JOIN usuario u ON sc.id_usuario_instructor = u.id_usuario " +
+                    "ORDER BY sc.fecha_solicitud DESC";
+        
+        return jdbcTemplate.queryForList(sql);
+    }
 
+<<<<<<< HEAD
+    /**
+     * Aprueba una solicitud de categoría y crea la categoría en el sistema.
+     * 
+     * @param idSolicitudCategoria ID de la solicitud de categoría a aprobar
+     * @return Mensaje con el resultado de la operación
+     */
+    @Override
+    public String aprobarCategoria(Integer idSolicitudCategoria) {
+        try {
+            // Verificar si la solicitud existe
+            String checkSql = "SELECT COUNT(*) FROM solicitudcategoria WHERE id_solicitud_categoria = ?";
+            Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, idSolicitudCategoria);
+            
+            if (count == null || count == 0) {
+                return "Error: La solicitud de categoría no existe";
+            }
+            
+            // Obtener los datos de la solicitud
+            String getSql = "SELECT nombre_categoria, descripcion, estatus FROM solicitudcategoria WHERE id_solicitud_categoria = ?";
+            Map<String, Object> solicitud = jdbcTemplate.queryForMap(getSql, idSolicitudCategoria);
+            
+            String estatus = (String) solicitud.get("estatus");
+            if (!"en revision".equals(estatus)) {
+                return "Error: La solicitud de categoría no está en estado de revisión";
+            }
+            
+            String nombreCategoria = (String) solicitud.get("nombre_categoria");
+            String descripcion = (String) solicitud.get("descripcion");
+            
+            // Verificar si ya existe una categoría con ese nombre
+            String checkCatSql = "SELECT COUNT(*) FROM categoria WHERE nombre_categoria = ?";
+            Integer catCount = jdbcTemplate.queryForObject(checkCatSql, Integer.class, nombreCategoria);
+            
+            if (catCount != null && catCount > 0) {
+                // Actualizar el estatus de la solicitud a aprobada
+                String updateSql = "UPDATE solicitudcategoria SET estatus = 'aprobada' WHERE id_solicitud_categoria = ?";
+                jdbcTemplate.update(updateSql, idSolicitudCategoria);
+                return "Solicitud de categoría aprobada exitosamente. La categoría ya existía en el sistema.";
+            }
+            
+            // Crear la nueva categoría
+            String insertSql = "INSERT INTO categoria (nombre_categoria, descripcion) VALUES (?, ?)";
+            jdbcTemplate.update(insertSql, nombreCategoria, descripcion);
+            
+            // Actualizar el estatus de la solicitud a aprobada
+            String updateSql = "UPDATE solicitudcategoria SET estatus = 'aprobada' WHERE id_solicitud_categoria = ?";
+            jdbcTemplate.update(updateSql, idSolicitudCategoria);
+            
+            return "Solicitud de categoría aprobada exitosamente. Se ha creado la nueva categoría.";
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error al aprobar la solicitud de categoría: " + e.getMessage();
+        }
+    }
+=======
+>>>>>>> 5c33c0f89bd33a731df0256c3f3e2a3a81fceee2
 }

@@ -22,8 +22,9 @@ import mx.utng.finer_back_end.Administrador.DTO.CategoriaDTO;
 import mx.utng.finer_back_end.Administrador.Services.AdministradorService;
 import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
 
+// Add this annotation at the class level, right before the @RestController annotation
+@RequestMapping("/api/administrador")
 @RestController
-@RequestMapping("/api/admin")  // Changed from "/api/administrador"
 public class AdministradorController {
 
     @Autowired
@@ -180,27 +181,26 @@ public class AdministradorController {
      *         - `500 Internal Server Error`: Si ocurre un error al procesar la
      *         solicitud.
      */
-    @PostMapping("/crearCategoria")
+    @PostMapping("/crear-categoria")
     public ResponseEntity<Map<String, Object>> crearCategoria(@RequestBody Map<String, Object> obj) {
         Map<String, Object> response = new HashMap<>();
 
         try {
             // Extraer los valores del objeto recibido
             Integer idUsuarioInstructor = Integer.parseInt(obj.get("idUsuarioInstructor").toString());
-            Integer idUsuarioAdmin = Integer.parseInt(obj.get("idUsuarioAdmin").toString());
+            // Removed idUsuarioAdmin parameter as it's no longer needed
             String nombreCategoria = (String) obj.get("nombreCategoria");
             String descripcion = (String) obj.get("descripcion");
 
             // Validar que los datos necesarios estén presentes
-            if (idUsuarioInstructor == null || idUsuarioAdmin == null ||
-                    nombreCategoria == null || nombreCategoria.isEmpty()) {
+            if (idUsuarioInstructor == null || nombreCategoria == null || nombreCategoria.isEmpty()) {
                 response.put("mensaje",
-                        "El ID del instructor, ID del administrador y nombre de la categoría son obligatorios");
+                        "El ID del instructor y nombre de la categoría son obligatorios");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
 
             // Llamar al servicio para crear la solicitud de categoría
-            String resultado = administradorService.crearCategoria(idUsuarioInstructor, idUsuarioAdmin, nombreCategoria,
+            String resultado = administradorService.crearCategoria(idUsuarioInstructor, nombreCategoria,
                     descripcion);
 
             // Verificar el resultado - MODIFICADO PARA RECONOCER EL MENSAJE DE ÉXITO
@@ -374,7 +374,7 @@ public class AdministradorController {
      *         - `500 Internal Server Error`: Si ocurre un error al procesar la
      *         aprobación.
      */
-    @PostMapping("/aprobarCurso")
+    @PostMapping("/aprobar-curso")
     public ResponseEntity<Map<String, Object>> aprobarCurso(@RequestBody Map<String, Object> obj) {
         Map<String, Object> response = new HashMap<>();
 
@@ -712,6 +712,100 @@ public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj)
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         } catch (Exception e) {
             response.put("mensaje", "Error al procesar la solicitud");
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * Endpoint para aprobar una solicitud de categoría.
+     * 
+     * Este método permite al administrador aprobar una solicitud de categoría pendiente.
+     * Al aprobarla, se cambia el estatus de la solicitud a "aprobada" y se crea
+     * una nueva categoría en el sistema.
+     *
+     * @param obj Objeto que contiene el ID de la solicitud de categoría
+     * @return ResponseEntity con el mensaje de éxito o error
+     * 
+     *         Posibles respuestas:
+     *         - `200 OK`: Solicitud aprobada correctamente.
+     *         - `400 Bad Request`: Si falta el ID de la solicitud.
+     *         - `404 Not Found`: Si no se encuentra la solicitud.
+     *         - `500 Internal Server Error`: Si ocurre un error al procesar la aprobación.
+     */
+    @PostMapping("/aprobar-categoria")
+    public ResponseEntity<Map<String, Object>> aprobarCategoria(@RequestBody Map<String, Object> obj) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Extraer el ID de la solicitud de categoría
+            Integer idSolicitudCategoria = Integer.parseInt(obj.get("idSolicitudCategoria").toString());
+            
+            if (idSolicitudCategoria == null) {
+                response.put("mensaje", "El ID de solicitud de categoría es requerido");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            
+            // Llamar al servicio para aprobar la categoría
+            String resultado = administradorService.aprobarCategoria(idSolicitudCategoria);
+            
+            // Verificar el resultado
+            if (resultado.contains("no existe") || resultado.contains("no encontrada")) {
+                response.put("mensaje", resultado);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            } else if (resultado.contains("aprobada exitosamente")) {
+                response.put("mensaje", resultado);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("mensaje", "Error al procesar la solicitud: " + resultado);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+            
+        } catch (DataAccessException e) {
+            response.put("mensaje", "Error en la base de datos al intentar aprobar la categoría");
+            response.put("error", e.getMessage() + ": " + e.getMostSpecificCause().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        } catch (NumberFormatException e) {
+            response.put("mensaje", "El ID de la solicitud de categoría debe ser un número entero válido");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception e) {
+            response.put("mensaje", "Error al procesar la solicitud");
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * Endpoint para obtener todas las solicitudes de categoría.
+     * 
+     * Este método retorna una lista de todas las solicitudes de categoría,
+     * incluyendo las pendientes, aprobadas y rechazadas.
+     *
+     * @return ResponseEntity con la lista de solicitudes o mensaje de error
+     * 
+     *         Posibles respuestas:
+     *         - `200 OK`: Lista de solicitudes recuperada correctamente (incluso si está vacía).
+     *         - `500 Internal Server Error`: Si ocurre un error al procesar la consulta.
+     */
+    @GetMapping("/solicitudes-categoria")
+    public ResponseEntity<?> verSolicitudesCategoria() {
+        try {
+            List<Map<String, Object>> solicitudes = administradorService.verSolicitudesCategoria();
+            Map<String, Object> response = new HashMap<>();
+            
+            if (solicitudes.isEmpty()) {
+                response.put("mensaje", "No hay solicitudes de categoría");
+                response.put("solicitudes", solicitudes); // Incluimos la lista vacía
+            } else {
+                response.put("mensaje", "Solicitudes recuperadas exitosamente");
+                response.put("solicitudes", solicitudes);
+            }
+            
+            return ResponseEntity.ok(response); // Siempre retornamos 200 OK
+            
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("mensaje", "Error al obtener las solicitudes de categoría");
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
