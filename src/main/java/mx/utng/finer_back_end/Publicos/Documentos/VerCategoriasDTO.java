@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VerCategoriasDTO {
+    private Integer idCategoria;
     private String nombreCategoria;
     private String descripcion;
+    
 }

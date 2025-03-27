@@ -26,8 +26,9 @@ public class VerCategoriaImplement  implements VerCategoriaService{
         
         for (Object[] row : resultados) {
             VerCategoriasDTO verCategoriaDetalle = new VerCategoriasDTO(
-                (String) row[0],  // nombre_categoria
-                (String) row[1]   // descripcion
+                (Integer) row[0],  //IdCategoria
+                (String) row[1],   // descripcion
+                (String) row[2] //IdCategoria
             );
             detalles.add(verCategoriaDetalle);
         }
