@@ -38,9 +38,9 @@ public class SolicitudCategoriaInstructorController {
         
         try {
             // Validar que el estatus sea válido según la constraint de la base de datos
-            if (!estatus.equals("aprobado") && !estatus.equals("rechazado") && !estatus.equals("en revision")) {
+            if (!estatus.equals("aprobada") && !estatus.equals("rechazada") && !estatus.equals("en revision")) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Estatus no válido. Debe ser 'aprobado', 'rechazado' o 'en revision'"));
+                    .body(Map.of("error", "Estatus no válido. Debe ser 'aprobada', 'rechazada' o 'en revision'"));
             }
             
             String sql = "SELECT sc.id_solicitud_categoria, sc.estatus, sc.nombre_categoria, sc.descripcion " +
@@ -101,10 +101,10 @@ public ResponseEntity<?> corregirCursoRechazado(
         // Obtener el estado de la solicitud
         String estatus = estatusResult.get(0);
         
-        // Verificar que esté en estado "rechazado"
-        if (!estatus.equals("rechazado")) {
+        // Verificar que esté en estado "rechazada"
+        if (!estatus.equals("rechazada")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "La solicitud no está en estado 'rechazado'. Estado actual: " + estatus));
+                .body(Map.of("error", "La solicitud no está en estado 'rechazada'. Estado actual: " + estatus));
         }
         
         // Actualizamos la solicitud con las correcciones y cambiamos el estado
@@ -164,10 +164,10 @@ public ResponseEntity<?> editarCategoriaRechazada(@RequestBody EdicionCategoriaD
         // Obtener el estado de la solicitud
         String estatus = estatusResult.get(0);
         
-        // Verificar que esté en estado "rechazado"
-        if (!estatus.equals("rechazado")) {
+        // Verificar que esté en estado "rechazada"
+        if (!estatus.equals("rechazada")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "La solicitud no está en estado 'rechazado'. Estado actual: " + estatus));
+                .body(Map.of("error", "La solicitud no está en estado 'rechazada'. Estado actual: " + estatus));
         }
         
         // Actualizar la solicitud con los nuevos datos

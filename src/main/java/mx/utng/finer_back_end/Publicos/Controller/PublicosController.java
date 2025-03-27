@@ -1,10 +1,15 @@
 package mx.utng.finer_back_end.Publicos.Controller;
 
+import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
 import mx.utng.finer_back_end.Publicos.Documentos.CursoDetalleDTO;
+import mx.utng.finer_back_end.Publicos.Documentos.VerCategoriasDTO;
 import mx.utng.finer_back_end.Publicos.Services.EmailService;
 import mx.utng.finer_back_end.Publicos.Services.PublicosService;
+import mx.utng.finer_back_end.Publicos.Services.VerCategoriaService;
 import mx.utng.finer_back_end.Publicos.Services.VerCursoService;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +19,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 @RestController
 @RequestMapping("/api/token")
 public class PublicosController {
+
+    @Autowired
+    private VerCategoriaService categoriaService;
     
     private static final SecureRandom random = new SecureRandom();
     public static String tokenGenerado = null;
@@ -157,6 +166,27 @@ public class PublicosController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+
+
+    @GetMapping("/ver-categoria-aprobada")
+public ResponseEntity<?> obtenerCategorias(){
+    try {
+        List<VerCategoriasDTO> verCategoriasDTOs = categoriaService.obtenerCategorias();
+        if (verCategoriasDTOs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No se encuentran categorías");
+        }
+        return ResponseEntity.ok(verCategoriasDTOs);
+    } catch (DataAccessException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error interno al procesar la solicitud: " + e.getMessage());
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Solicitud incorrecta: " + e.getMessage());
+    }
+}
+    
 
 
 

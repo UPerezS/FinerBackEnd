@@ -1,4 +1,4 @@
-package mx.utng.finer_back_end.Administrador.Implement;
+    package mx.utng.finer_back_end.Administrador.Implement;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class SolicitudInstructorImplement implements SolicitudInstructorService 
         if (resultado != null && !resultado.isEmpty()) {
             Object[] fila = resultado.get(0);
 
-            if (fila != null && fila.length >= 12) {
+            if (fila != null && fila.length >= 13) {
                 SolicitudInstructorDocumento solicitud = new SolicitudInstructorDocumento(
                         (String) fila[5]);
                 enviarCorreoRechazoInstructor((String) fila[5], motivo);

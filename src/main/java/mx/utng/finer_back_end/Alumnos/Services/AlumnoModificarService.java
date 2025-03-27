@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,37 +35,30 @@ public class AlumnoModificarService {
             throw new RuntimeException("Error al generar el hash de la contraseña", e);
         }
     }
-    public ResponseEntity<String> actualizarPerfilAlumno(Integer idUsuario,String nombre,String apellidoPaterno, String apellidoMaterno,
-        String nombreUsuario, String correo,String contrasenia){
-            
-            try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
-                // Convertir la contraseña a un hash SHA-256
-                String contraseniaHashed = hashPassword(contrasenia);
-                
-                // Actualizamos directamente la tabla Usuario en lugar de llamar a la función sql
-                String sql = "UPDATE Usuario SET nombre = ?, apellido_paterno = ?, " +
-                            "apellido_materno = ?, nombre_usuario = ?, correo = ?, " +
-                            "contrasenia = ? WHERE id_usuario = ?";
-                
-                try (CallableStatement statement = connection.prepareCall(sql)) {
-                    statement.setString(1, nombre);
-                    statement.setString(2, apellidoPaterno);
-                    statement.setString(3, apellidoMaterno);
-                    statement.setString(4, nombreUsuario);
-                    statement.setString(5, correo);
-                    statement.setString(6, contraseniaHashed);
-                    statement.setInt(7, idUsuario);
-                    
-                    int rowsAffected = statement.executeUpdate();
-                    
-                    if (rowsAffected == 0) {
-                        return ResponseEntity.status(404).body("Usuario no encontrado");
-                    }
-                }
-                
-                return ResponseEntity.ok("Perfil actualizado correctamente.");
-            } catch (SQLException e) {
-                return ResponseEntity.status(500).body("Error en la DB: " + e.getMessage());
-            }
-        }
+    public ResponseEntity<String> actualizarPerfilAlumno(Integer idUsuario, String nombre, String apellidoPaterno, 
+    String apellidoMaterno, String nombreUsuario, String correo, String contrasenia) {
+try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+    // Llamar a la función de PostgreSQL para actualizar el perfil
+    String sql = "SELECT actualizar_perfil_alumno(?, ?, ?, ?, ?, ?, ?)";
+    
+    try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        statement.setInt(1, idUsuario);
+        statement.setString(2, nombre);
+        statement.setString(3, apellidoPaterno);
+        statement.setString(4, apellidoMaterno);
+        statement.setString(5, nombreUsuario);
+        statement.setString(6, correo);
+        statement.setString(7, contrasenia);
+        
+        statement.execute();
+        
+        return ResponseEntity.ok("Perfil actualizado correctamente.");
     }
+} catch (SQLException e) {
+    // Manejar específicamente el caso de usuario no encontrado
+    if (e.getMessage().contains("Usuario no encontrado")) {
+        return ResponseEntity.status(404).body("Usuario no encontrado");
+    }
+    return ResponseEntity.status(500).body("Error en la DB: " + e.getMessage());
+}
+}}

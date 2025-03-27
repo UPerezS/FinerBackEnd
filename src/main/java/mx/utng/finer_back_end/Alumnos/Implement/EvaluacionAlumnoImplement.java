@@ -44,4 +44,9 @@ public class EvaluacionAlumnoImplement implements EvaluacionAlumnoService {
         }
         return new ArrayList<>(preguntasExamenMap.values());
     }
+
+    @Override
+    public Number guardarRespuestas(Integer idEstudiante, Integer idCurso, Integer[] idPreguntas, Integer[] idOpciones) {
+        return evaluacionAlumnoDao.guardarRespuestas(idEstudiante, idCurso, idPreguntas, idOpciones);
+    }
 }

@@ -439,48 +439,43 @@ public class AdministradorController {
      *         bloqueo.
      */
     @PostMapping("/bloquearUsuario")
-    public ResponseEntity<Map<String, Object>> bloquearUsuario(@RequestBody Map<String, Object> obj) {
-        Map<String, Object> response = new HashMap<>();
+public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj) {
+    Map<String, String> response = new HashMap<>();
 
-        try {
-            // Extraer el nombre de usuario del objeto recibido
-            String nombreUsuario = (String) obj.get("nombreUsuario");
+    try {
+        String nombreUsuario = (String) obj.get("nombreUsuario");
 
-            // Validar que el nombre de usuario esté presente
-            if (nombreUsuario == null || nombreUsuario.isEmpty()) {
-                response.put("mensaje", "El nombre de usuario es obligatorio");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-            }
+        if (nombreUsuario == null || nombreUsuario.isEmpty()) {
+            response.put("mensaje", "El nombre de usuario es obligatorio");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
 
-            // Llamar al servicio para bloquear al usuario
-            String resultado = administradorService.bloquearUsuario(nombreUsuario);
+        String resultado = administradorService.bloquearUsuario(nombreUsuario);
 
-            // Verificar el resultado
-            if (resultado.equals("Usuario no encontrado.")) {
-                response.put("mensaje", resultado);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            } else if (resultado.equals("Usuario bloqueado exitosamente.")) {
-                response.put("mensaje", resultado);
-                return ResponseEntity.ok(response);
-            } else if (resultado.equals("El usuario ya está bloqueado.")) {
-                response.put("mensaje", resultado);
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("mensaje", "Error al procesar la solicitud: " + resultado);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-            }
-
-        } catch (DataAccessException e) {
-            response.put("mensaje", "Error en la base de datos al intentar bloquear al usuario");
-            response.put("error", e.getMessage() + ": " + e.getMostSpecificCause().getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        } catch (Exception e) {
-            response.put("mensaje", "Error al procesar la solicitud");
-            response.put("error", e.getMessage());
+        if (resultado.contains("Usuario bloqueado correctamente")) {
+            response.put("mensaje", resultado);
+            return ResponseEntity.ok(response);
+        } else if (resultado.equals("Usuario no encontrado.")) {
+            response.put("mensaje", resultado);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } else if (resultado.equals("El usuario ya está bloqueado.")) {
+            response.put("mensaje", resultado);
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("mensaje", "Error al procesar la solicitud: " + resultado);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-    }
 
+    } catch (DataAccessException e) {
+        response.put("mensaje", "Error en la base de datos al intentar bloquear al usuario");
+        response.put("error", e.getMessage() + ": " + e.getMostSpecificCause().getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    } catch (Exception e) {
+        response.put("mensaje", "Error al procesar la solicitud");
+        response.put("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+}
     /**
      * Endpoint para obtener los datos completos de un usuario.
      * 
@@ -658,13 +653,10 @@ public class AdministradorController {
             
             if (solicitudes.isEmpty()) {
                 response.put("mensaje", "No hay solicitudes de instructor");
-                response.put("solicitudes", solicitudes); // Incluimos la lista vacía
-            } else {
-                response.put("mensaje", "Solicitudes recuperadas exitosamente");
-                response.put("solicitudes", solicitudes);
+                return ResponseEntity.ok(response);
+            } else { // Correcto, agregamos la lista de solicitudes al mapa
+                return ResponseEntity.ok(solicitudes);
             }
-            
-            return ResponseEntity.ok(response); // Siempre retornamos 200 OK
             
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
@@ -673,6 +665,7 @@ public class AdministradorController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    
 
 
     /**

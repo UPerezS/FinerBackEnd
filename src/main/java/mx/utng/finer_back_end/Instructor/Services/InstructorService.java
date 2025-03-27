@@ -27,7 +27,7 @@ public class InstructorService {
      * @param telefono         Teléfono del instructor
      * @param direccion        Dirección del instructor
      * @param cedula           Cédula del instructor
-     * @return Mensaje de éxito o error
+     * @return Mensaje de éxito o error 
      */
     public ResponseEntity<String> registrarInstructor(String nombre, String apellidoPaterno, String apellidoMaterno,
                                   String correo, String contrasenia, String nombreUsuario, String telefono, String direccion,  byte[] cedulaPdf) {

@@ -16,7 +16,6 @@ import mx.utng.finer_back_end.Alumnos.Documentos.CursoDetalleAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoNombreAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO; 
 import mx.utng.finer_back_end.Alumnos.Services.CursoAlumnoService;
-import mx.utng.finer_back_end.Documentos.CursoDocumento;
 import mx.utng.finer_back_end.Documentos.TemaDocumento;
 
 
@@ -139,7 +138,7 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
      * @param nombreCurso Nombre del curso a buscar
      * @return Lista de cursos encontrados
      */
-    public List<CursoNombreAlumnoDTO> getCurso(String nombreCurso) {
+    public List<CursoNombreAlumnoDTO> getCursoNombre(String nombreCurso) {
         String sql = "SELECT * FROM filtrar_cursos_nombre(?)";  // Llamamos la función PL/pgSQL
         return jdbcTemplate.query(sql, new Object[]{nombreCurso}, (rs, rowNum) -> {
             // Mapeo del resultado de la consulta a un objeto CursoDocumento
@@ -153,6 +152,28 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
             return curso;
         });
     }
+
+     /**
+     * Método que busca cursos por nombre utilizando la función PL/pgSQL
+     * @param nombreCurso Nombre del curso a buscar
+     * @return Lista de cursos encontrados
+     */
+    public List<CursoNombreAlumnoDTO> getCursoCategoria(String categoria) {
+        String sql = "SELECT * FROM filtrar_cursos_categoria(?)";  // Llamamos la función PL/pgSQL
+        return jdbcTemplate.query(sql, new Object[]{categoria}, (rs, rowNum) -> {
+            // Mapeo del resultado de la consulta a un objeto CursoDocumento
+            CursoNombreAlumnoDTO curso = new CursoNombreAlumnoDTO();
+            curso.setTituloCurso(rs.getString("titulo_curso"));
+            curso.setDescripcion(rs.getString("descripcion"));
+            curso.setNombreInstructor(rs.getString("nombre_instructor"));
+            curso.setApellidoPaterno(rs.getString("apellido_paterno"));
+            curso.setApellidoMaterno(rs.getString("apellido_materno"));
+            curso.setNombreCategoria(rs.getString("nombre_categoria"));
+            return curso;
+        });
+    }
+
+
     public List<ContinuarCursoDTO> continuarCurso(Integer idCurso, Integer idUsuarioAlumno) {
         List<Object[]> result = continuarCursoDao.continuar_curso(idCurso, idUsuarioAlumno);
         List<ContinuarCursoDTO> cursos = new ArrayList<>();

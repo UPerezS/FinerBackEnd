@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -270,10 +269,28 @@ public class CursoAlumnoController {
     }
 
 
-    @GetMapping("/curso/{nombreCurso}")
+    @GetMapping("/curso/nombre/{nombreCurso}")
     public ResponseEntity<?> buscarCursoNombre(@PathVariable String nombreCurso) {
         try {
-            List<CursoNombreAlumnoDTO> cursos = cursoAlumnoService.getCurso(nombreCurso);
+            List<CursoNombreAlumnoDTO> cursos = cursoAlumnoService.getCursoNombre(nombreCurso);
+            if (cursos.isEmpty()) {
+                return ResponseEntity.status(404).body("Curso no encontrado");
+            }
+            return ResponseEntity.ok(cursos);  // Si se encuentran cursos, retornamos los datos
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error en la conexión: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Endpoint para buscar un curso por su categoria.
+     * @param nombreCurso
+     * @return
+     */
+    @GetMapping("/curso/categoria/{categoria}")
+    public ResponseEntity<?> buscarCursoCateogria(@PathVariable String categoria) {
+        try {
+            List<CursoNombreAlumnoDTO> cursos = cursoAlumnoService.getCursoCategoria(categoria);
             if (cursos.isEmpty()) {
                 return ResponseEntity.status(404).body("Curso no encontrado");
             }

@@ -25,7 +25,7 @@ public boolean actualizarContrasenia(String correoUsuario, String nuevaContrasen
     try {
         String sql = "SELECT actualizar_contrasenia(?, ?)";
         Boolean resultado = jdbcTemplate.queryForObject(sql, Boolean.class, correoUsuario, nuevaContrasenia);
-        return resultado != null && resultado; // Verifica que no sea null y sea true
+        return resultado != null && resultado; 
     } catch (Exception e) {
         System.err.println("Error al actualizar contraseña: " + e.getMessage());
         return false;

@@ -48,6 +48,11 @@ public class InstructorController {
                                                     ) {
         try {
             byte[] cedulaBytes = cedula.getBytes();
+             // Verifica que el tamaño del archivo sea mayor a cero
+        if (cedulaBytes.length == 0) {
+            return ResponseEntity.status(400).body("El archivo de cédula está vacío");
+        }
+
             ResponseEntity<String> mensaje = instructorService.registrarInstructor(nombre, apellidoPaterno, apellidoMaterno, correo, contrasenia, nombreUsuario, telefono, direccion, cedulaBytes);
             return mensaje;
         } catch (Exception e) {
@@ -68,7 +73,7 @@ public class InstructorController {
          String nombreUsuario 
     ){
         try{
-            ResponseEntity<String> mensaje = instructorModificarService.actualizarPerfilInstuctor(idUsuario, nombre, apellidoPaterno,  apellidoMaterno,
+            ResponseEntity<String> mensaje = instructorModificarService.actualizarPerfilInstructor(idUsuario, nombre, apellidoPaterno,  apellidoMaterno,
              nombreUsuario,  correo, telefono,direccion);
             return mensaje;
         }catch(Exception e){

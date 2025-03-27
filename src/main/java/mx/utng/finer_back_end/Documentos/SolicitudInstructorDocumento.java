@@ -1,5 +1,7 @@
 package mx.utng.finer_back_end.Documentos;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -68,15 +70,20 @@ public class SolicitudInstructorDocumento {
     @Column(name = "cedula_pdf")
     private byte[] cedulaPdf;
 
+    @Column(name = "fecha_solicitud")
+    private LocalDateTime fechaSolicitud;
+
     // Campo: estatus_solicitud
     @Column(name = "estatus_solicitud")
     private String estatusSolicitud;
+
+
 
     // Constructor con todos los parámetros
     public SolicitudInstructorDocumento(Integer idSolicitudInstructor, Integer idRol, String nombre,
             String apellidoPaterno,
             String apellidoMaterno, String correo, String contrasenia, String nombreUsuario,
-            String telefono, String direccion, byte[] cedulaPdf, String estatusSolicitud) {
+            String telefono, String direccion, byte[] cedulaPdf, LocalDateTime fechaSolicitud,String estatusSolicitud) {
         this.idSolicitudInstructor = idSolicitudInstructor; // Mantener Integer
         this.idRol = idRol;
         this.nombre = nombre;
@@ -88,6 +95,7 @@ public class SolicitudInstructorDocumento {
         this.telefono = telefono;
         this.direccion = direccion;
         this.cedulaPdf = cedulaPdf;
+        this.fechaSolicitud =fechaSolicitud;
         this.estatusSolicitud = estatusSolicitud;
     }
 
@@ -190,5 +198,13 @@ public class SolicitudInstructorDocumento {
 
     public void setEstatusSolicitud(String estatusSolicitud) {
         this.estatusSolicitud = estatusSolicitud;
+    }
+
+      public LocalDateTime getFechaSolicitud() {
+        return fechaSolicitud;
+    }
+
+    public void setFechaSolicitud(LocalDateTime fechaSolicitud) {
+        this.fechaSolicitud = fechaSolicitud;
     }
 }

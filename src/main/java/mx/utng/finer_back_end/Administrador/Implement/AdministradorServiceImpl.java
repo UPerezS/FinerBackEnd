@@ -1,6 +1,7 @@
 package mx.utng.finer_back_end.Administrador.Implement;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;  // Add this import
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -215,21 +216,7 @@ public class AdministradorServiceImpl implements AdministradorService {
                     nombreCategoria
                 );
                 
-                // Nota: La tabla log_categoria no existe en el esquema actual de la base de datos
-                // Por lo tanto, no intentamos registrar en ella y continuamos con el flujo normal
-                // Si en el futuro se implementa esta tabla, se puede descomentar el código siguiente:
-                /*
-                try {
-                    jdbcTemplate.update(
-                        "INSERT INTO log_categoria (id_categoria, id_usuario_instructor, id_usuario_admin, fecha_creacion) VALUES (?, ?, ?, CURRENT_TIMESTAMP)", 
-                        idCategoria, 
-                        idUsuarioInstructor, 
-                        idUsuarioAdmin
-                    );
-                } catch (Exception logError) {
-                    System.err.println("Error al registrar en log_categoria: " + logError.getMessage());
-                }
-                */
+                
                 
                 return "Categoría '" + nombreCategoria + "' creada exitosamente con ID: " + idCategoria;
             } else {
@@ -424,42 +411,27 @@ public class AdministradorServiceImpl implements AdministradorService {
     @Transactional
     public String bloquearUsuario(String nombreUsuario) {
         try {
-            // Verificar si el usuario existe
-            Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM usuario WHERE nombre_usuario = ?", 
+            // Get user ID by username
+            Integer idUsuario = jdbcTemplate.queryForObject(
+                "SELECT id_usuario FROM usuario WHERE nombre_usuario = ?", 
                 Integer.class, 
                 nombreUsuario
             );
-            
-            if (count == null || count == 0) {
+    
+            if (idUsuario == null) {
                 return "No se encontró el usuario con el nombre de usuario proporcionado";
             }
-            
-            // Verificar el rol actual del usuario
-            Integer idRolActual = jdbcTemplate.queryForObject(
-                "SELECT id_rol FROM usuario WHERE nombre_usuario = ?",
-                Integer.class,
-                nombreUsuario
+    
+            // Call database function to block user
+            String resultado = jdbcTemplate.queryForObject(
+                "SELECT bloquear_usuario(?)", 
+                String.class, 
+                idUsuario
             );
-            
-            // Verificar si ya está bloqueado (asumiendo que el id_rol para 'bloqueado' es 4)
-            if (idRolActual != null && idRolActual == 4) {
-                return "El usuario ya se encuentra bloqueado";
-            }
-            
-            // Actualizar el rol del usuario a 'bloqueado'
-            int filasAfectadas = jdbcTemplate.update(
-                "UPDATE usuario SET id_rol = 4 WHERE nombre_usuario = ?", 
-                nombreUsuario
-            );
-            
-            if (filasAfectadas > 0) {
-                return "Usuario bloqueado exitosamente";
-            } else {
-                return "Error al bloquear el usuario";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    
+            return resultado;
+    
+        } catch (DataAccessException e) {
             return "Error al bloquear el usuario: " + e.getMessage();
         }
     }
@@ -483,7 +455,7 @@ public class AdministradorServiceImpl implements AdministradorService {
             
             // Obtener los datos del usuario
             Map<String, Object> usuario = jdbcTemplate.queryForMap(
-                "SELECT u.*, r.nombre_rol FROM usuario u JOIN rol r ON u.id_rol = r.id_rol WHERE u.nombre_usuario = ?",
+                "SELECT u.*, r.rol FROM usuario u JOIN rol r ON u.id_rol = r.id_rol WHERE u.nombre_usuario = ?",
                 nombreUsuario
             );
             
@@ -506,27 +478,35 @@ public class AdministradorServiceImpl implements AdministradorService {
         }
     }
     
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public List<Map<String, Object>> buscarUsuarioNombre(String busqueda) {
-        try {
-            // Buscar usuarios por coincidencia en nombre, apellido paterno o apellido materno
-            String sql = "SELECT u.*, r.nombre_rol FROM usuario u " +
-                         "JOIN rol r ON u.id_rol = r.id_rol " +
-                         "WHERE LOWER(u.nombre) LIKE LOWER(?) OR " +
-                         "LOWER(u.apellido_paterno) LIKE LOWER(?) OR " +
-                         "LOWER(u.apellido_materno) LIKE LOWER(?)";
-            
-            String termino = "%" + busqueda + "%";
-            
-            return jdbcTemplate.queryForList(sql, termino, termino, termino);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return List.of(Map.of("error", "Error al buscar usuarios: " + e.getMessage()));
-        }
+public List<Map<String, Object>> buscarUsuarioNombre(String busqueda) {
+    try {
+   
+        String sql = "SELECT u.*, r.rol FROM usuario u " +
+                     "JOIN rol r ON u.id_rol = r.id_rol " +
+                     "WHERE (LOWER(u.nombre) = LOWER(?) OR " +
+                     "       LOWER(u.apellido_paterno) = LOWER(?) OR " +
+                     "       LOWER(u.apellido_materno) = LOWER(?) OR " +
+                     "       LOWER(CONCAT(u.nombre, ' ', u.apellido_paterno)) = LOWER(?) OR " +
+                     "       LOWER(CONCAT(u.nombre, ' ', u.apellido_materno)) = LOWER(?) OR " +
+                     "       LOWER(CONCAT(u.apellido_paterno, ' ', u.nombre)) = LOWER(?) OR " +
+                     "       LOWER(CONCAT(u.apellido_materno, ' ', u.nombre)) = LOWER(?) OR " +
+                     "       LOWER(CONCAT(u.nombre, ' ', u.apellido_paterno, ' ', u.apellido_materno)) = LOWER(?) OR " +
+                     "       LOWER(CONCAT(u.apellido_paterno, ' ', u.apellido_materno, ' ', u.nombre)) = LOWER(?))";
+        
+      
+        String termino = busqueda.trim();
+        
+   
+        return jdbcTemplate.queryForList(sql, 
+            termino, termino, termino, 
+            termino, termino, termino, 
+            termino, termino, termino);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return List.of(Map.of("error", "Error al buscar usuarios: " + e.getMessage()));
     }
+}
     
     /**
      * {@inheritDoc}
@@ -591,7 +571,6 @@ public class AdministradorServiceImpl implements AdministradorService {
             return List.of();
         }
     }
-
     @Override
     @Transactional
     public String aceptarInstructor(Integer idSolicitudInstructor) {
@@ -621,19 +600,7 @@ public class AdministradorServiceImpl implements AdministradorService {
                 "SELECT * FROM solicitudinstructor WHERE id_solicitud_instructor = ?",
                 idSolicitudInstructor);
                 
-            // Crear un nuevo usuario con rol de instructor
-            jdbcTemplate.update(
-                "INSERT INTO usuario (id_rol, nombre, apellido_paterno, apellido_materno, correo, contrasenia, nombre_usuario, telefono, estatus) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'activo')",
-                2, // Rol de instructor (id_rol = 2)
-                instructor.get("nombre"),
-                instructor.get("apellido_paterno"),
-                instructor.get("apellido_materno"),
-                instructor.get("correo"),
-                instructor.get("contrasenia"),
-                instructor.get("nombre_usuario"),
-                instructor.get("telefono")
-            );
+            
             
             // Llamar a la función de PostgreSQL para actualizar el estado de la solicitud
             try {
@@ -699,6 +666,8 @@ public class AdministradorServiceImpl implements AdministradorService {
             System.err.println("Error al enviar correo de aceptación de instructor: " + e.getMessage());
         }
     }
+
+
     
     @Transactional(readOnly = true)
     public List<Map<String, Object>> verSolicitudInstructor() {
