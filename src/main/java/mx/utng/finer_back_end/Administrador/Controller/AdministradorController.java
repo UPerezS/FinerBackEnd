@@ -23,7 +23,7 @@ import mx.utng.finer_back_end.Administrador.Services.AdministradorService;
 import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
 
 @RestController
-@RequestMapping("/api/admin")  // Changed from "/api/administrador"
+@RequestMapping("/api/administrador")
 public class AdministradorController {
 
     @Autowired
@@ -316,17 +316,6 @@ public class AdministradorController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
 
-            // Verificar si la categoría existe
-            Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM categoria WHERE id_categoria = ?",
-                    Integer.class,
-                    id);
-
-            if (count != null && count == 0) {
-                response.put("mensaje", "No se encontró la categoría con el ID proporcionado");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-
             // Llamar al servicio para eliminar la categoría
             Boolean resultado = administradorService.eliminarCategoria(id);
 
@@ -335,9 +324,20 @@ public class AdministradorController {
                 response.put("mensaje", "Categoría eliminada correctamente");
                 return ResponseEntity.ok(response);
             } else {
-                response.put("mensaje",
-                        "No se pudo eliminar la categoría. Puede estar siendo utilizada por otros registros.");
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+                // Verificar si la categoría existe
+                Integer count = jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM categoria WHERE id_categoria = ?",
+                        Integer.class,
+                        id);
+
+                if (count != null && count == 0) {
+                    response.put("mensaje", "No se encontró la categoría con el ID proporcionado");
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                } else {
+                    response.put("mensaje",
+                            "No se pudo eliminar la categoría. Puede estar siendo utilizada por otros registros.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+                }
             }
 
         } catch (DataAccessException e) {
@@ -664,56 +664,4 @@ public ResponseEntity<Map<String, String>> bloquearUsuario(@RequestBody Map obj)
     
 
 
-    /**
-     * Endpoint para aceptar una solicitud de instructor.
-     * 
-     * Este método permite al administrador aprobar una solicitud de instructor.
-     * Al aprobarla, se cambia el estatus de la solicitud a "aprobada" y se crea
-     * un nuevo usuario con rol de instructor en el sistema.
-     *
-     * @param payload Objeto que contiene el ID de la solicitud de instructor
-     * @return ResponseEntity con el mensaje de éxito o error
-     * 
-     *         Posibles respuestas:
-     *         - `200 OK`: Solicitud aprobada correctamente.
-     *         - `400 Bad Request`: Si falta el ID de la solicitud.
-     *         - `404 Not Found`: Si no se encuentra la solicitud.
-     *         - `500 Internal Server Error`: Si ocurre un error al procesar la aprobación.
-     */
-    @PostMapping("/aceptar-instructor")
-    public ResponseEntity<?> aceptarInstructor(@RequestBody Map<String, Integer> payload) {
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            Integer idSolicitudInstructor = payload.get("idSolicitudInstructor");
-            if (idSolicitudInstructor == null) {
-                response.put("mensaje", "El ID de solicitud de instructor es requerido");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-            }
-            
-            // Llamar al servicio para aceptar al instructor
-            String resultado = administradorService.aceptarInstructor(idSolicitudInstructor);
-            
-            // Verificar el resultado
-            if (resultado.contains("no existe") || resultado.contains("no encontrada")) {
-                response.put("mensaje", resultado);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            } else if (resultado.contains("aceptado exitosamente") || resultado.contains("aprobado exitosamente")) {
-                response.put("mensaje", resultado);
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("mensaje", "Error al procesar la solicitud: " + resultado);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-            }
-            
-        } catch (DataAccessException e) {
-            response.put("mensaje", "Error en la base de datos al intentar aceptar al instructor");
-            response.put("error", e.getMessage() + ": " + e.getMostSpecificCause().getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        } catch (Exception e) {
-            response.put("mensaje", "Error al procesar la solicitud");
-            response.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
 }
