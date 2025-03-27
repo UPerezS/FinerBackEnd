@@ -2,6 +2,7 @@ package mx.utng.finer_back_end.Publicos.Controller;
 
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
 import mx.utng.finer_back_end.Publicos.Documentos.CursoDetalleDTO;
+import mx.utng.finer_back_end.Publicos.Documentos.RecuperarContraseniaDTO;
 import mx.utng.finer_back_end.Publicos.Documentos.VerCategoriasDTO;
 import mx.utng.finer_back_end.Publicos.Services.EmailService;
 import mx.utng.finer_back_end.Publicos.Services.PublicosService;
@@ -106,41 +107,6 @@ public class PublicosController {
             return ResponseEntity.status(500).body("Error al autenticar: " + e.getMessage());
         }
     }
-    @PostMapping("/recuperar-contrasenia")
-    public ResponseEntity<Boolean> recuperarContrasenia(
-        @RequestParam String correoUsuario, 
-        @RequestParam String nuevaContrasenia, 
-        @RequestParam String tokenIngresado) {
-    try {
-        // Paso 1: Generar token numérico
-        tokenGenerado = generarTokenNumerico();
-
-        // Paso 2: Enviar token al correo del usuario
-        boolean enviado = emailService.mandarTokenNumerico(correoUsuario, tokenGenerado);
-
-        if (!enviado) {
-            return ResponseEntity.status(500).body(false); // Error al enviar el token
-        }
-
-        // *** Se espera la respuesta del frontend con el token ingresado ***
-
-        // Paso 3: Verificar el token ingresado
-        if (!compararToken(tokenIngresado)) {
-            return ResponseEntity.status(401).body(false); // Token incorrecto
-        }
-
-        // Paso 4: Si el token es válido, actualizar la contraseña en la BD
-        boolean actualizado = usuarioService.actualizarContrasenia(correoUsuario, nuevaContrasenia);
-
-        if (actualizado) {
-            return ResponseEntity.ok(true); // Contraseña actualizada con éxito
-        } else {
-            return ResponseEntity.status(500).body(false); // Error al actualizar contraseña
-        }
-    } catch (Exception e) {
-        return ResponseEntity.status(500).body(false); // Error general
-    }
-}
 
 
 /**
@@ -187,6 +153,73 @@ public ResponseEntity<?> obtenerCategorias(){
     }
 }
     
+
+
+/**
+     * Endpoint para enviar el token al correo del usuario.
+     * Se espera un JSON con la propiedad "correoUsuario".
+     * Ejemplo de petición:
+     * {
+     *   "correoUsuario": "usuario@ejemplo.com"
+     * }
+     * 
+     * @param request Mapa que contiene el correo del usuario.
+     * @return ResponseEntity con mensaje de confirmación o error.
+     */
+    @PostMapping("/enviar-token")
+    public ResponseEntity<String> enviarToken(@RequestBody Map<String, String> request) {
+        String correoUsuario = request.get("correoUsuario");
+        if(correoUsuario == null || correoUsuario.isEmpty()){
+            return ResponseEntity.badRequest().body("El correoUsuario es obligatorio");
+        }
+        
+        tokenGenerado = generarTokenNumerico();
+        boolean enviado = emailService.mandarTokenNumerico(correoUsuario, tokenGenerado);
+        if(enviado){
+            return ResponseEntity.ok("Token enviado a " + correoUsuario);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al enviar el token.");
+        }
+    }
+
+
+    /**
+     * Endpoint para recuperar (actualizar) la contraseña.
+     * Se espera un JSON con "correo", "token" y "nuevaContrasenia".
+     * Ejemplo de petición:
+     * {
+     *   "correo": "usuario@ejemplo.com",
+     *   "token": "123456",
+     *   "nuevaContrasenia": "NuevaClaveSegura123!"
+     * }
+     * 
+     * @param dto Objeto con correo, token y nueva contraseña.
+     * @return ResponseEntity con true si la actualización fue exitosa, o false en caso contrario.
+     */
+    @PostMapping("/recuperar-contrasenia")
+public ResponseEntity<Boolean> recuperarContrasenia(@RequestBody RecuperarContraseniaDTO dto) {
+
+    if (tokenGenerado == null || !tokenGenerado.equals(dto.getToken())) {
+        System.out.println("Tokens no coinciden.");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+    }
+
+    try {
+        String resultado = usuarioService.actualizarContrasenia(dto.getCorreo(), dto.getNuevaContrasenia());
+        System.out.println("Resultado de actualizar_contrasenia: " + resultado);
+
+        boolean exito = resultado.contains("exitosamente");
+        if (exito) {
+            tokenGenerado = null; // 🔹 Invalida el token después de la actualización exitosa
+            return ResponseEntity.ok(true);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+    }
+}
 
 
 

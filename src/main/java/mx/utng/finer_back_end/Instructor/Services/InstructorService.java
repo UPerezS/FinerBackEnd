@@ -30,7 +30,7 @@ public class InstructorService {
      * @return Mensaje de éxito o error 
      */
     public ResponseEntity<String> registrarInstructor(String nombre, String apellidoPaterno, String apellidoMaterno,
-                                  String correo, String contrasenia, String nombreUsuario, String telefono, String direccion,  byte[] cedulaPdf) {
+                                  String correo, String contrasenia, String nombreUsuario, String telefono, String direccion,  String cedulaPdf) {
         try {
             String sql = "SELECT registrar_instructor(?, ?, ?, ?, ?, ?, ?, ?, ?)";
             String result = jdbcTemplate.queryForObject(sql, String.class, nombre, apellidoPaterno,

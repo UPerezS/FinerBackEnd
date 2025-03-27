@@ -30,6 +30,8 @@ public class AdministradorController {
     @Autowired
     private AdministradorService administradorService;
 
+    
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 

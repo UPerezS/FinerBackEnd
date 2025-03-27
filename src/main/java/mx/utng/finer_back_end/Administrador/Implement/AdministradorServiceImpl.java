@@ -2,18 +2,15 @@ package mx.utng.finer_back_end.Administrador.Implement;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.http.ResponseEntity; // Add this import
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +144,7 @@ public class AdministradorServiceImpl implements AdministradorService {
                 // El registro existe y está en estado válido para rechazar, procedemos a
                 // actualizarlo
                 int filasAfectadas = jdbcTemplate.update(
-                        "UPDATE solicitudcurso SET estatus = 'rechazado' WHERE id_solicitud_curso = ?",
+                        "UPDATE solicitudcurso SET estatus = 'rechazada' WHERE id_solicitud_curso = ?",
                         idSolicitudCurso);
 
                 if (filasAfectadas > 0) {

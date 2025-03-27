@@ -44,16 +44,12 @@ public class InstructorController {
                                                     @RequestParam String nombreUsuario,
                                                     @RequestParam String telefono,
                                                     @RequestParam String direccion,
-                                                    @RequestParam MultipartFile cedula
+                                                    @RequestParam String cedula
                                                     ) {
         try {
-            byte[] cedulaBytes = cedula.getBytes();
-             // Verifica que el tamaño del archivo sea mayor a cero
-        if (cedulaBytes.length == 0) {
-            return ResponseEntity.status(400).body("El archivo de cédula está vacío");
-        }
-
-            ResponseEntity<String> mensaje = instructorService.registrarInstructor(nombre, apellidoPaterno, apellidoMaterno, correo, contrasenia, nombreUsuario, telefono, direccion, cedulaBytes);
+            
+    
+            ResponseEntity<String> mensaje = instructorService.registrarInstructor(nombre, apellidoPaterno, apellidoMaterno, correo, contrasenia, nombreUsuario, telefono, direccion, cedula);
             return mensaje;
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error de conexión: " + e.getMessage());

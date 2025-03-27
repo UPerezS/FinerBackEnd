@@ -16,21 +16,23 @@ public class PublicosService {
         this.jdbcTemplate = jdbcTemplate;
         this.usuarioRepository = usuarioRepository;
     }
-     /** Llama a la función SQL actualizar_contrasenia para cambiar la contraseña del usuario.
- * @param correoUsuario El correo del usuario que quiere cambiar su contraseña.
- * @param nuevaContrasenia La nueva contraseña encriptada o en texto plano (según la BD).
- * @return true si la actualización fue exitosa, false si falló.
- */
-public boolean actualizarContrasenia(String correoUsuario, String nuevaContrasenia) {
-    try {
+
+    
+   /**
+     * Actualiza la contraseña del usuario a través de la función almacenada.
+     * @param correoUsuario Correo del usuario.
+     * @param nuevaContrasenia Nueva contraseña.
+     * @return Mensaje resultado de la función almacenada.
+     */
+    public String actualizarContrasenia(String correoUsuario, String nuevaContrasenia) {
         String sql = "SELECT actualizar_contrasenia(?, ?)";
-        Boolean resultado = jdbcTemplate.queryForObject(sql, Boolean.class, correoUsuario, nuevaContrasenia);
-        return resultado != null && resultado; 
-    } catch (Exception e) {
-        System.err.println("Error al actualizar contraseña: " + e.getMessage());
-        return false;
+        try {
+            String resultado = jdbcTemplate.queryForObject(sql, new Object[]{correoUsuario, nuevaContrasenia}, String.class);
+            return resultado;
+        } catch (Exception e) {
+            return "Error al actualizar la contraseña: " + e.getMessage();
+        }
     }
-}
 
     /**
      * Obtiene el correo electrónico del usuario por su ID.

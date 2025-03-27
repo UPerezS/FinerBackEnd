@@ -17,4 +17,5 @@ public class InstructorDetalleModificarDTO {
     private String nombreUsuario;
     private String telefono;
     private String direccion;
+
 }
