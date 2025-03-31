@@ -14,17 +14,16 @@ public class TemaService {
      * @param idSolicitudCurso /int/ 
      * @param nombreTema /String/
      * @param contenido /String/
-     * @param imagen /byte/
      * @return mensaje de éxito o error
      * 
      */
-    public ResponseEntity<String> registrarTema(int idSolicitudCurso, String nombreTema, String contenido,
-                                    byte[] imagen) {
+    public ResponseEntity<String> registrarTema(int idSolicitudCurso, String nombreTema, String contenido
+                                    ) {
 
     try{
-        String sql = "SELECT agregar_tema_solicitud(?,?,?,?)";
+        String sql = "SELECT agregar_tema_solicitud(?,?,?)";
         Object result = jdbcTemplate.queryForObject(sql, Object.class, idSolicitudCurso,
-        nombreTema,contenido,imagen);
+        nombreTema,contenido);
             if (result instanceof String) {
                 return ResponseEntity.ok((String) result);  // Si es un String
             } else if (result instanceof Integer ) {

@@ -14,4 +14,5 @@ public class CursoDetalleAlumnoDTO {
     private String categoria;
     private Integer cantidadTemas;
     private Integer cantidadInscritos;
+    private String imagen;
 }

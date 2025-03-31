@@ -28,6 +28,9 @@ public class CursoDocumento {
     @NotBlank
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
+
+    @Column(name = "imagen")
+    private String imagen;
     
     // Getters y Setters
     
@@ -69,5 +72,12 @@ public class CursoDocumento {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
     }
 }

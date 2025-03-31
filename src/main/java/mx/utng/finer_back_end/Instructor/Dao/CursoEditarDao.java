@@ -19,9 +19,10 @@ public interface CursoEditarDao extends JpaRepository<CursoDocumento, Integer> {
      * @param idCategoria el nuevo ID de la categoría del curso
      * @return Mensaje con el resultado de la operación.
      */
-    @Query(value = "SELECT modificar_curso(:p_id_curso, :p_id_instructor, :p_descripcion, :p_id_categoria)", nativeQuery = true)
+    @Query(value = "SELECT modificar_curso(:p_id_curso, :p_id_instructor, :p_descripcion, :p_id_categoria, :p_imagen)", nativeQuery = true)
     String modificarCurso(@Param("p_id_curso") Integer idCurso, 
                           @Param("p_id_instructor") Integer idInstructor, 
                           @Param("p_descripcion") String descripcion,
-                          @Param("p_id_categoria") Integer idCategoria);
+                          @Param("p_id_categoria") Integer idCategoria,
+                          @Param("p_imagen") String p_imagen );
 }

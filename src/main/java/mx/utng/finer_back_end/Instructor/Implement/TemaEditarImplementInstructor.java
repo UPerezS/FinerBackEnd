@@ -14,9 +14,9 @@ public class TemaEditarImplementInstructor implements TemaEditarServiceInstructo
     private TemaEditarDaoInstructor temaEditarDao;
 
     @Override
-    public ResponseEntity<String> editarTema(Integer idUsuario, Integer idTema, String nombreTema, String contenido, byte[] imagen) {
+    public ResponseEntity<String> editarTema(Integer idUsuario, Integer idTema, String nombreTema, String contenido) {
         try {
-            String result = temaEditarDao.editarTema(idUsuario, idTema, nombreTema, contenido, imagen);
+            String result = temaEditarDao.editarTema(idUsuario, idTema, nombreTema, contenido);
             if (result.contains("Error")) {
                 return ResponseEntity.status(400).body(result); // Error en la base de datos
             }

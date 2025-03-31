@@ -15,7 +15,8 @@ public class CursoVerDTO {
     private Integer idCurso;
     private String titulo;
     private String descripcion;
-    private String estatus;
-    private String origen;
+    private Integer idCategoria;
+    private String nombreCategoria;
+    private String imagen;
 
 }

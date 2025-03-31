@@ -11,11 +11,11 @@ import mx.utng.finer_back_end.Instructor.Documentos.CursoVerDTO;
 import mx.utng.finer_back_end.Instructor.Services.CursoVerServiceInstructor;
 
 @Service
-public class CursoVerImplementInstructor implements CursoVerServiceInstructor{
+public class CursoVerImplementInstructor implements CursoVerServiceInstructor {
     @Autowired
     private CursoVerDaoInstructor cursoVerDao;
 
-     @Override
+    @Override
     public List<CursoVerDTO> verCursos(Integer idInstructor) {
         List<Object[]> resultados = cursoVerDao.verCursos(idInstructor);
         List<CursoVerDTO> cursos = new ArrayList<>();
@@ -27,13 +27,14 @@ public class CursoVerImplementInstructor implements CursoVerServiceInstructor{
             // 2: descripcion (String)
             // 3: estatus (String)
             // 4: origen (String)
+            // 5: Imagen (String)
             CursoVerDTO dto = new CursoVerDTO(
                     (Integer) row[0],
                     (String) row[1],
                     (String) row[2],
-                    (String) row[3],
-                    (String) row[4]
-            );
+                    (Integer) row[3],
+                    (String) row[4],
+                    (String) row[5]);
             cursos.add(dto);
         }
         return cursos;

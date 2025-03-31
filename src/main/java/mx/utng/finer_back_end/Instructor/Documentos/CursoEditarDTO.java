@@ -6,6 +6,7 @@ public class CursoEditarDTO {
     private Integer idInstructor; // ID del instructor
     private String descripcion;   // Nueva descripción del curso
     private Integer idCategoria; // Nueva categoría del curso
+    private String imagen;
 
     // Getters y Setters
     public Integer getIdCurso() {
@@ -38,5 +39,13 @@ public class CursoEditarDTO {
 
     public void setIdCategoria(Integer idCategoria) {
         this.idCategoria = idCategoria;
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
     }
 }

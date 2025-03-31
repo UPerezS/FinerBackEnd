@@ -11,7 +11,7 @@ public class TemaDocumento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_tema")
-    private Integer idTema;  // Usamos Integer para coincidir con el tipo INTEGER de la tabla
+    private Integer idTema; // Usamos Integer para coincidir con el tipo INTEGER de la tabla
 
     @NotNull
     @Column(name = "id_curso")
@@ -24,22 +24,17 @@ public class TemaDocumento {
     @Column(name = "contenido")
     private String contenido;
 
-    @Lob
-    @Column(name = "imagen")
-    private byte[] imagen;
-
     // Getters y Setters de cada uno de los atributos de la tabla
     public TemaDocumento() {
     }
 
-    public TemaDocumento(Integer idTema, Integer idCurso, String nombreTema, String contenido, byte[] imagen) {
+    public TemaDocumento(Integer idTema, Integer idCurso, String nombreTema, String contenido) {
         this.idTema = idTema;
         this.idCurso = idCurso;
         this.nombreTema = nombreTema;
         this.contenido = contenido;
-        this.imagen = imagen;
+
     }
-    
 
     public Integer getIdTema() {
         return idTema;
@@ -73,11 +68,4 @@ public class TemaDocumento {
         this.contenido = contenido;
     }
 
-    public byte[] getImagen() {
-        return imagen;
-    }
-
-    public void setImagen(byte[] imagen) {
-        this.imagen = imagen;
-    }
 }

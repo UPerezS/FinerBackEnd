@@ -32,10 +32,11 @@ public class InstructorCursoController {
             @RequestParam int idUsuarioInstructor,
             @RequestParam int idCategoria,
             @RequestParam String tituloCurso,
-            @RequestParam String descripcion) {
+            @RequestParam String descripcion,
+            @RequestParam String imagen) {
         try {
             ResponseEntity<String> mensaje = InstructorcursoService.registrarCursos(idUsuarioInstructor,
-                    tituloCurso, descripcion, idCategoria);
+                    tituloCurso, descripcion, idCategoria, imagen);
             return mensaje;
 
         } catch (Exception e) {

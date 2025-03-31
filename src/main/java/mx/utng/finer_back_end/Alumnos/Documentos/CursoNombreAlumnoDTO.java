@@ -7,6 +7,7 @@ public class CursoNombreAlumnoDTO {
         private String apellidoPaterno;
         private String apellidoMaterno;
         private String nombreCategoria;
+        private String imagen;
     
         // Getters y Setters
     
@@ -57,5 +58,13 @@ public class CursoNombreAlumnoDTO {
         public void setNombreCategoria(String nombreCategoria) {
             this.nombreCategoria = nombreCategoria;
         }
+
+        public String getImagen() {
+            return imagen;
+        }
+        public void setImagen(String imagen) {
+            this.imagen = imagen;
+        }
+
     }
     

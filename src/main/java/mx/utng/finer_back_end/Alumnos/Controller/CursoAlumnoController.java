@@ -61,14 +61,14 @@ public class CursoAlumnoController {
      *         - `500 Internal Server Error`: Si ocurre un error inesperado en
      *         el servidor.
      */
-    @GetMapping("/detalles/{id}")
-    public ResponseEntity<?> obtenerDetalles(@PathVariable Integer id) {
+    @GetMapping("/detalles/{titulo_curso}")
+    public ResponseEntity<?> obtenerDetalles(@PathVariable String titulo_curso) {
         try {
-            List<CursoDetalleAlumnoDTO> detalles = cursoService.getCurso(id);
+            List<CursoDetalleAlumnoDTO> detalles = cursoService.getCurso(titulo_curso);
 
             // Si la lista está vacía, significa que el curso no existe
             if (detalles.isEmpty()) {
-                return ResponseEntity.status(404).body("No se encontró ningún curso con el ID " + id);
+                return ResponseEntity.status(404).body("No se encontró ningún curso con el ID " + titulo_curso);
             }
 
             return ResponseEntity.ok(detalles);

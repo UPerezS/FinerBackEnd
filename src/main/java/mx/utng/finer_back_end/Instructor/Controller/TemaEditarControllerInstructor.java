@@ -24,15 +24,14 @@ public class TemaEditarControllerInstructor {
      * @param idTema identificador del tema a editar.
      * @param nombreTema nuevo nombre del tema.
      * @param contenido nuevo contenido del tema.
-     * @param imagen nueva imagen del tema.
      * @return ResponseEntity con el mensaje de estado.
      */
     @PutMapping("/editar/{idUsuario}/{idTema}")
     public ResponseEntity<String> editarTema(@PathVariable Integer idUsuario, 
                                              @PathVariable Integer idTema,
                                              @RequestParam(required = false) String nombreTema,
-                                             @RequestParam(required = false) String contenido,
-                                             @RequestParam(required = false) byte[] imagen) {
-        return temaEditarService.editarTema(idUsuario, idTema, nombreTema, contenido, imagen);
+                                             @RequestParam(required = false) String contenido
+                                           ) {
+        return temaEditarService.editarTema(idUsuario, idTema, nombreTema, contenido);
     }
 }

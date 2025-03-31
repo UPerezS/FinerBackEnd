@@ -9,15 +9,13 @@ public class ContinuarCursoDTO {
     private Integer idTema;
     private String nombreTema;
     private String contenido;
-    private String imagen;
     private Boolean f;
 
     // Constructor con todos los parámetros
-    public ContinuarCursoDTO(Integer idTema, String nombreTema, String contenido, String imagen, Boolean f) {
+    public ContinuarCursoDTO(Integer idTema, String nombreTema, String contenido, Boolean f) {
         this.idTema = idTema;
         this.nombreTema = nombreTema;
         this.contenido = contenido;
-        this.imagen = imagen;
         this.f = f;
     }
 
@@ -32,10 +30,6 @@ public class ContinuarCursoDTO {
 
     public String getContenido() {
         return contenido;
-    }
-
-    public String getImagen() {
-        return imagen;
     }
 
     public Boolean getF() {
@@ -53,10 +47,6 @@ public class ContinuarCursoDTO {
 
     public void setContenido(String contenido) {
         this.contenido = contenido;
-    }
-
-    public void setImagen(String imagen) {
-        this.imagen = imagen;
     }
 
     public void setF(Boolean f) {

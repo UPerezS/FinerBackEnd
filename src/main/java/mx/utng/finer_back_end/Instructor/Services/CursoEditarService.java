@@ -19,6 +19,6 @@ public class CursoEditarService {
      */
     public String editarCurso(CursoEditarDTO cursoEditarDTO) {
         // Llamar a la función de la base de datos para modificar el curso
-        return cursoEditarDao.modificarCurso(cursoEditarDTO.getIdCurso(), cursoEditarDTO.getIdInstructor(), cursoEditarDTO.getDescripcion(), cursoEditarDTO.getIdCategoria());
+        return cursoEditarDao.modificarCurso(cursoEditarDTO.getIdCurso(), cursoEditarDTO.getIdInstructor(), cursoEditarDTO.getDescripcion(), cursoEditarDTO.getIdCategoria(), cursoEditarDTO.getImagen());
     }
 }

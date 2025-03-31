@@ -14,7 +14,7 @@ public interface CursoAlumnoService {
      * idCurso Int
      * Return: Obj Curso
      */
-    List<CursoDetalleAlumnoDTO> getCurso(Integer idCurso);
+    List<CursoDetalleAlumnoDTO> getCurso(String titulo_curso);
 
     Boolean inscribirseCurso(Integer idUsuario, Integer idCurso);
 

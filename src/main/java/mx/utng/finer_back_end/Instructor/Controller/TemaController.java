@@ -20,7 +20,6 @@ public class TemaController {
      * @param idSolicitudCurso /int/
      * @param nombreTema       /char/
      * @param contenido        /String/
-     * @param imagen           /byte/
      * @return mensaje de éxito o error
      * 
      * 
@@ -31,11 +30,10 @@ public class TemaController {
     public ResponseEntity<String> crearTema(
             @RequestParam int idSolicitudCurso,
             @RequestParam String nombreTema,
-            @RequestParam String contenido,
-            @RequestParam byte[] imagen) {
+            @RequestParam String contenido) {
 
         try {
-            ResponseEntity<String> mensaje = temaService.registrarTema(idSolicitudCurso, nombreTema, contenido, imagen);
+            ResponseEntity<String> mensaje = temaService.registrarTema(idSolicitudCurso, nombreTema, contenido);
             return mensaje;
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error de conexión" + e.getMessage());

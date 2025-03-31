@@ -38,6 +38,10 @@ public class SolicitudCursoDocumento {
     @Column(name = "id_categoria")
     private Integer idCategoria;
 
+    
+    @Column(name = "imagen")
+    private String imagen;
+
     // @Column(name = "id_curso")
     // private Integer idCurso;
 
@@ -107,4 +111,11 @@ public class SolicitudCursoDocumento {
     // public void setIdCurso(Integer idCurso) {
     //     this.idCurso = idCurso;
     // }
+
+    public String getImagen() {
+        return imagen;
+    }
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
+    }
 }

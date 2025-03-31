@@ -27,7 +27,8 @@ public class VerCursoImplement implements VerCursoService{
                 (String) row[2], // nombre del instructor
                 (String) row[3], // apellido paterno
                 (String) row[4], // apellido materno
-                (String) row[5]  // nombre de la categoría
+                (String) row[5],  // nombre de la categoría
+                (String) row[6] //Imagen
             );
             detalles.add(dto);
         }
