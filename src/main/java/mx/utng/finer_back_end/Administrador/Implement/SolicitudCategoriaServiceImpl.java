@@ -36,7 +36,7 @@ public class SolicitudCategoriaServiceImpl implements SolicitudCategoriaService 
         }
 
         if (aprobar) {
-            solicitud.setEstatus("aprobado");
+            solicitud.setEstatus("aprobada");
             // Crear nueva categoría si la solicitud es aprobada
             CategoriaDocumento nuevaCategoria = new CategoriaDocumento();
             nuevaCategoria.setNombreCategoria(solicitud.getNombreCategoria());
@@ -46,7 +46,7 @@ public class SolicitudCategoriaServiceImpl implements SolicitudCategoriaService 
                 return new ResponseEntity<>("Error al crear la categoría", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
-            solicitud.setEstatus("rechazado");
+            solicitud.setEstatus("rechazada");
         }
 
         try {
