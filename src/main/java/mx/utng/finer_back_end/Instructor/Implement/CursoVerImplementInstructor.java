@@ -32,7 +32,7 @@ public class CursoVerImplementInstructor implements CursoVerServiceInstructor {
                     (Integer) row[0],
                     (String) row[1],
                     (String) row[2],
-                    (Integer) row[3],
+                    (String) row[3],
                     (String) row[4],
                     (String) row[5]);
             cursos.add(dto);
