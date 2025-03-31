@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/solicitudes")
@@ -22,15 +23,16 @@ public class SolicitudCategoriaController {
          return solicitudCategoriaService.obtenerTodasLasSolicitudes();
      }
 
-    @PutMapping("/aprobar/{id}")
-    public ResponseEntity<String> aprobarCategoria(@PathVariable Integer id) {
-        return solicitudCategoriaService.aprobarDesaprobarCategoria(id, true);
-    }
-
-    @PutMapping("/desaprobar/{id}")
-    public ResponseEntity<String> desaprobarCategoria(@PathVariable Integer id) {
-        return solicitudCategoriaService.aprobarDesaprobarCategoria(id, false);
-    }
+     @PutMapping("/aprobar/{id}")
+     public ResponseEntity<Map<String, Object>> aprobarCategoria(@PathVariable Integer id) {
+         return solicitudCategoriaService.aprobarDesaprobarCategoria(id, true);
+     }
+     
+     @PutMapping("/desaprobar/{id}")
+     public ResponseEntity<Map<String, Object>> desaprobarCategoria(@PathVariable Integer id) {
+         return solicitudCategoriaService.aprobarDesaprobarCategoria(id, false);
+     }
+     
     // Nuevo endpoint para obtener las solicitudes de un instructor
     @GetMapping("/instructor/{id}")
     public ResponseEntity<List<SolicitudCategoriaDocumento>> obtenerSolicitudesPorInstructor(@PathVariable Integer id) {

@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,34 +30,40 @@ public class SolicitudCategoriaServiceImpl implements SolicitudCategoriaService 
     private CategoriaDao categoriaDao;
 
     @Override
-    public ResponseEntity<String> aprobarDesaprobarCategoria(Integer idSolicitud, boolean aprobar) {
+    public ResponseEntity<Map<String, Object>> aprobarDesaprobarCategoria(Integer idSolicitud, boolean aprobar) {
+        Map<String, Object> response = new HashMap<>();
         SolicitudCategoriaDocumento solicitud = solicitudCategoriaDao.findById(idSolicitud).orElse(null);
 
         if (solicitud == null) {
-            return new ResponseEntity<>("Solicitud no encontrada", HttpStatus.BAD_REQUEST);
+            response.put("success", false);
+            response.put("message", "Solicitud no encontrada");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         if (aprobar) {
             solicitud.setEstatus("aprobada");
-            // Crear nueva categoría si la solicitud es aprobada
             CategoriaDocumento nuevaCategoria = new CategoriaDocumento();
             nuevaCategoria.setNombreCategoria(solicitud.getNombreCategoria());
             try {
-                categoriaDao.save(nuevaCategoria); // Guarda la nueva categoría en la tabla Categoria
+                categoriaDao.save(nuevaCategoria);
             } catch (Exception e) {
-                return new ResponseEntity<>("Error al crear la categoría", HttpStatus.INTERNAL_SERVER_ERROR);
+                response.put("success", false);
+                response.put("message", "Error al crear la categoría");
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
             solicitud.setEstatus("rechazada");
         }
 
         try {
-            solicitudCategoriaDao.save(solicitud); // Actualiza el estado de la solicitud
-            return new ResponseEntity<>(
-                    "Solicitud " + (aprobar ? "aprobada y categoría creada" : "rechazada") + " con éxito",
-                    HttpStatus.OK);
+            solicitudCategoriaDao.save(solicitud);
+            response.put("success", true);
+            response.put("message", "Solicitud " + (aprobar ? "aprobada y categoría creada" : "rechazada") + " con éxito");
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("Error al procesar la solicitud", HttpStatus.INTERNAL_SERVER_ERROR);
+            response.put("success", false);
+            response.put("message", "Error al procesar la solicitud");
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
