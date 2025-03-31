@@ -1,5 +1,6 @@
 package mx.utng.finer_back_end.Administrador.Controller;
 
+import mx.utng.finer_back_end.Administrador.Documentos.SolicitudCategoriaDatos;
 import mx.utng.finer_back_end.Administrador.Implement.SolicitudCategoriaServiceImpl;
 import mx.utng.finer_back_end.Documentos.SolicitudCategoriaDocumento;
 
@@ -17,7 +18,7 @@ public class SolicitudCategoriaController {
     
      // Endpoint para obtener todas las solicitudes
      @GetMapping("/todas")
-     public List<SolicitudCategoriaDocumento> obtenerTodasLasSolicitudes() {
+     public List<SolicitudCategoriaDatos> obtenerTodasLasSolicitudes() {
          return solicitudCategoriaService.obtenerTodasLasSolicitudes();
      }
 
