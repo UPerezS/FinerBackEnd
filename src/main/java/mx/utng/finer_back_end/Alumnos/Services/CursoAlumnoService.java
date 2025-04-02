@@ -5,8 +5,10 @@ import java.util.List;
 import mx.utng.finer_back_end.Alumnos.Documentos.CertificadoDetalleDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.ContinuarCursoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoDetalleAlumnoDTO;
+import mx.utng.finer_back_end.Alumnos.Documentos.CursoInscritoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
 import mx.utng.finer_back_end.Documentos.TemaDocumento;
+import mx.utng.finer_back_end.Alumnos.Documentos.CursoInscritoDTO;
 
 public interface CursoAlumnoService {
     /*
@@ -28,4 +30,6 @@ public interface CursoAlumnoService {
 
     List<ContinuarCursoDTO> continuarCurso(Integer idCurso, Integer idUsuarioAlumno);
     
+    List<CursoInscritoDTO> verCursosDelAlumno(Integer idAlumno);
+    Boolean esAlumno(Integer idUsuario);
 }

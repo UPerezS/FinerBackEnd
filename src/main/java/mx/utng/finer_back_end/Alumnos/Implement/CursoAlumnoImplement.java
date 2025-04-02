@@ -3,6 +3,7 @@ package mx.utng.finer_back_end.Alumnos.Implement;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.sql.Timestamp;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,10 +14,12 @@ import mx.utng.finer_back_end.Alumnos.Dao.CursoAlumnoDao;
 import mx.utng.finer_back_end.Alumnos.Documentos.CertificadoDetalleDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.ContinuarCursoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoDetalleAlumnoDTO;
+import mx.utng.finer_back_end.Alumnos.Documentos.CursoInscritoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoNombreAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Services.CursoAlumnoService;
 import mx.utng.finer_back_end.Documentos.TemaDocumento;
+
 
 @Service
 public class CursoAlumnoImplement implements CursoAlumnoService {
@@ -193,4 +196,31 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
 
         return cursos;
     }
+    @Override
+    @Transactional
+    public List<CursoInscritoDTO> verCursosDelAlumno(Integer idAlumno) {
+        List<Object[]> resultados = cursoDao.obtenerCursosAlumno(idAlumno);
+        List<CursoInscritoDTO> cursosInscritos = new ArrayList<>();
+
+        for (Object[] row : resultados) {
+            CursoInscritoDTO curso = new CursoInscritoDTO(
+                (Integer) row[0],           // id_curso
+                (String) row[1],            // titulo_curso
+                (String) row[2],            // descripcion
+                (Integer) row[3],           // id_categoria
+                (String) row[4],            // nombre_categoria
+                ((Timestamp) row[5]).toLocalDateTime(), // fecha_inscripcion
+                (String) row[6]             // estatus_inscripcion
+            );
+            cursosInscritos.add(curso);
+        }
+        return cursosInscritos;
+    }
+
+    @Override
+    public Boolean esAlumno(Integer idUsuario) {
+        return cursoDao.esAlumno(idUsuario);
+    }
+
+    
 }

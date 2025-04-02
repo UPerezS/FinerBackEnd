@@ -24,12 +24,12 @@ public class SolicitudCategoriaController {
      }
 
      @PutMapping("/aprobar/{id}")
-     public ResponseEntity<Map<String, Object>> aprobarCategoria(@PathVariable Integer id) {
+     public ResponseEntity<String> aprobarCategoria(@PathVariable Integer id) {
          return solicitudCategoriaService.aprobarDesaprobarCategoria(id, true);
      }
-     
+ 
      @PutMapping("/desaprobar/{id}")
-     public ResponseEntity<Map<String, Object>> desaprobarCategoria(@PathVariable Integer id) {
+     public ResponseEntity<String> desaprobarCategoria(@PathVariable Integer id) {
          return solicitudCategoriaService.aprobarDesaprobarCategoria(id, false);
      }
      

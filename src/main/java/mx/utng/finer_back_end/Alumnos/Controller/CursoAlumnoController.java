@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import mx.utng.finer_back_end.Alumnos.Documentos.CertificadoDetalleDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.ContinuarCursoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoDetalleAlumnoDTO;
+import mx.utng.finer_back_end.Alumnos.Documentos.CursoInscritoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoNombreAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Implement.CursoAlumnoImplement;
@@ -324,4 +325,39 @@ public class CursoAlumnoController {
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error inesperado", e);
     }
 }
+ /**
+     * Endpoint para obtener los cursos en los que está inscrito un alumno.
+     * Verifica primero si el ID corresponde a un alumno antes de mostrar los cursos.
+     * 
+     * @param idAlumno ID del alumno del cual se quieren obtener los cursos
+     * @return ResponseEntity con la lista de cursos o un mensaje de error
+     */
+    @GetMapping("/mis-cursos/{idAlumno}")
+    public ResponseEntity<?> verCursosDelAlumno(@PathVariable Integer idAlumno) {
+        try {
+            // Verificar si es un alumno
+            Boolean esAlumno = cursoService.esAlumno(idAlumno);
+            if (!esAlumno) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("El ID proporcionado no corresponde a un alumno");
+            }
+
+            List<CursoInscritoDTO> cursosInscritos = cursoService.verCursosDelAlumno(idAlumno);
+            
+            if (cursosInscritos.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No se encontraron cursos inscritos para el alumno con ID: " + idAlumno);
+            }
+            
+            return ResponseEntity.ok(cursosInscritos);
+        } catch (DataAccessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al acceder a la base de datos: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error inesperado: " + e.getMessage());
+        }
+    }
+
+
 }
