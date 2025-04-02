@@ -25,7 +25,7 @@ import mx.utng.finer_back_end.Documentos.UsuarioDocumento;
 
 // Change the class-level RequestMapping to be more explicit
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/administrador")
 @CrossOrigin(origins = "*")
 public class AdministradorController {
 

@@ -19,7 +19,7 @@ public interface SolicitudCategoriaDao extends JpaRepository<SolicitudCategoriaD
     @Query(value = "SELECT sc.*, u.nombre, u.apellido_paterno, u.apellido_materno " +
             "FROM solicitudcategoria sc " +
             "INNER JOIN usuario u ON u.id_usuario = sc.id_usuario_instructor " +
-            "WHERE sc.estatus = 'en revisión'", nativeQuery = true)
+            "WHERE sc.estatus = 'en revision'", nativeQuery = true)
     List<Object[]> obtenerSolicitudes();
 
 }
