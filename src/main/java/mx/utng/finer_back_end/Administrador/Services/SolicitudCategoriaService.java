@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface SolicitudCategoriaService {
-    ResponseEntity<String> aprobarDesaprobarCategoria(Integer idSolicitud, boolean aprobar);
+    ResponseEntity<Map<String, Object>> aprobarDesaprobarCategoria(Integer idSolicitud, boolean aprobar);
 
     // Método para recuperar solicitudes por instructor
     List<SolicitudCategoriaDocumento> obtenerSolicitudesPorInstructor(Integer idUsuarioInstructor);

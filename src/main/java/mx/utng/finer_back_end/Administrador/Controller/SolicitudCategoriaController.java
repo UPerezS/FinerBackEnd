@@ -24,15 +24,14 @@ public class SolicitudCategoriaController {
      }
 
      @PutMapping("/aprobar/{id}")
-     public ResponseEntity<String> aprobarCategoria(@PathVariable Integer id) {
+     public ResponseEntity<Map<String, Object>> aprobarCategoria(@PathVariable Integer id) {
          return solicitudCategoriaService.aprobarDesaprobarCategoria(id, true);
      }
- 
+     
      @PutMapping("/desaprobar/{id}")
-     public ResponseEntity<String> desaprobarCategoria(@PathVariable Integer id) {
+     public ResponseEntity<Map<String, Object>> desaprobarCategoria(@PathVariable Integer id) {
          return solicitudCategoriaService.aprobarDesaprobarCategoria(id, false);
      }
-     
     // Nuevo endpoint para obtener las solicitudes de un instructor
     @GetMapping("/instructor/{id}")
     public ResponseEntity<List<SolicitudCategoriaDocumento>> obtenerSolicitudesPorInstructor(@PathVariable Integer id) {
