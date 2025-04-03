@@ -28,13 +28,15 @@ public class CursoVerImplementInstructor implements CursoVerServiceInstructor {
             // 3: estatus (String)
             // 4: origen (String)
             // 5: Imagen (String)
+            // 6: CategoriaCurso(String)
             CursoVerDTO dto = new CursoVerDTO(
                     (Integer) row[0],
                     (String) row[1],
                     (String) row[2],
                     (String) row[3],
                     (String) row[4],
-                    (String) row[5]);
+                    (String) row[5],
+                    (String) row[6]);
             cursos.add(dto);
         }
         return cursos;

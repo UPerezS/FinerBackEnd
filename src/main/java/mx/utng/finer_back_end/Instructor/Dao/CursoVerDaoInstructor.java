@@ -10,5 +10,8 @@ import mx.utng.finer_back_end.Documentos.CursoDocumento;
 
 public interface CursoVerDaoInstructor extends JpaRepository<CursoDocumento, Integer> {
     @Query(value = "SELECT * FROM verCursos(:p_id_instructor)", nativeQuery = true)
+
+    
+
     List<Object[]> verCursos(@Param("p_id_instructor") Integer idInstructor);
 }

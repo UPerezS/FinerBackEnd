@@ -18,5 +18,6 @@ public class CursoVerDTO {
     private String estatus;
     private String origen;
     private String imagen;
+    private String categoria;
 
 }
