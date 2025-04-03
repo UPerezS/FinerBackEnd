@@ -85,28 +85,37 @@ public class PublicosController {
      * @apiNote - El token que se genera solo funciona mientras la aplicación esta en su linea de vida (no se reinicio)
      */
     @GetMapping("/iniciar-sesion")
-    private ResponseEntity<String> iniciarSesion(@RequestParam String nombreUsuario, @RequestParam String contrasenia) {
+    private ResponseEntity<Map<String, Object>> iniciarSesion(@RequestParam String nombreUsuario, @RequestParam String contrasenia) {
         try {
             // Llamamos a la función 'autenticarUsuario' del servicio
             Object[] usuarioDatos = usuarioService.autenticarUsuario(nombreUsuario, contrasenia);
-
+    
             // Verificamos si el usuario fue autenticado correctamente en la base de datos
-            if (usuarioDatos != null && (Boolean) usuarioDatos[2]) {
-                String idUsuario = String.valueOf(usuarioDatos[0]);
-                String correo = (String) usuarioDatos[1];
+            if (usuarioDatos != null && (Boolean) usuarioDatos[3]) {
+                Integer idUsuario = (Integer) usuarioDatos[0];
+                Integer idRol = (Integer) usuarioDatos[1];
+                String correo = (String) usuarioDatos[2];
+    
                 try {
                     this.enviarToken(correo);
                 } catch (Exception e) {
-                    return ResponseEntity.status(500).body("Ocurrio un error al enviar el correo" + e);
+                    return ResponseEntity.status(500).body(Map.of("error", "Ocurrió un error al enviar el correo: " + e.getMessage()));
                 }
-                return ResponseEntity.ok("Identificación en espera del usuario ID: " + idUsuario + " y token enviado a: " + correo);
+    
+                // Retornamos los datos requeridos
+                Map<String, Object> response = new HashMap<>();
+                response.put("idUsuario", idUsuario);
+                response.put("idRol", idRol);
+    
+                return ResponseEntity.ok(response);
             } else {
-                return ResponseEntity.status(401).body("Usuario o contraseña incorrectos.");
+                return ResponseEntity.status(401).body(Map.of("error", "Usuario o contraseña incorrectos."));
             }
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error al autenticar: " + e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("error", "Error al autenticar: " + e.getMessage()));
         }
     }
+    
 
 
 /**

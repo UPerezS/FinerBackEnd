@@ -55,9 +55,10 @@ public class PublicosService {
             
             return jdbcTemplate.queryForObject(sql, new Object[]{nombreUsuario, contrasenia}, (rs, rowNum) -> {
                 Integer idUsuario = rs.getInt("id_usuario");
+                Integer idRol = rs.getInt("id_rol");
                 String correo = rs.getString("correo");
                 Boolean autenticacion = rs.getBoolean("autenticacion");
-                return new Object[]{idUsuario, correo, autenticacion};
+                return new Object[]{idUsuario, idRol, correo, autenticacion};
             });
         } catch (Exception e) {
             System.err.println("Error al ejecutar la consulta SQL: " + e.getMessage());
