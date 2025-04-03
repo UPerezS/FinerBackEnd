@@ -22,13 +22,14 @@ public class VerCursoImplement implements VerCursoService{
 
         for (Object[] row : resultados) {
             CursoDetalleDTO dto = new CursoDetalleDTO(
-                (String) row[0], // titulo_curso
-                (String) row[1], // descripcion
-                (String) row[2], // nombre del instructor
-                (String) row[3], // apellido paterno
-                (String) row[4], // apellido materno
-                (String) row[5],  // nombre de la categoría
-                (String) row[6] //Imagen
+                (Integer) row [0], //idCurso
+                (String) row[1], // titulo_curso
+                (String) row[2], // descripcion
+                (String) row[3], // nombre del instructor
+                (String) row[4], // apellido paterno
+                (String) row[5], // apellido materno
+                (String) row[6],  // nombre de la categoría
+                (String) row[7] //Imagen
             );
             detalles.add(dto);
         }
