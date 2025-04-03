@@ -46,10 +46,12 @@ public class UsuarioDocumento {
 
     @Column(name = "direccion")
     private String direccion;
-
-    @Lob
+    
     @Column(name = "cedula_pdf")
-    private byte[] cedulaPdf; // Puedes descomentar esto si es necesario
+    private String cedulaPdf; 
+
+
+
 
     @Column(name = "estatus")
     private String estatus;
@@ -60,7 +62,7 @@ public class UsuarioDocumento {
     public UsuarioDocumento(String nombre, Integer idRol, String apellidoPaterno,
             String apellidoMaterno, String correo, String contrasenia,
             String nombreUsuario, String telefono, String direccion,
-            String estatus, byte[] cedulaPdf) {
+            String estatus, String cedulaPdf) {
         this.nombre = nombre;
         this.idRol = idRol;
         this.apellidoPaterno = apellidoPaterno;
@@ -157,11 +159,11 @@ public class UsuarioDocumento {
         this.direccion = direccion;
     }
 
-    public byte[] getCedulaPdf() {
+    public String getCedulaPdf() {
         return cedulaPdf;
     }
 
-    public void setCedulaPdf(byte[] cedulaPdf) {
+    public void setCedulaPdf(String cedulaPdf) {
         this.cedulaPdf = cedulaPdf;
     }
 

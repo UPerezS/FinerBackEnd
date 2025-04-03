@@ -55,4 +55,22 @@ public class AlumnoService {
             return "Error al actualizar la contraseña: " + e.getMessage();
         }
     }
+
+    public String completarTema(String idInscripcion, String idTema) {
+        try {
+            String sql = "SELECT completar_tema(?, ?)";
+            return jdbcTemplate.queryForObject(
+                sql, 
+                String.class,
+                Integer.parseInt(idInscripcion),
+                Integer.parseInt(idTema)
+            );
+        } catch (NumberFormatException e) {
+            return "Error: ID de inscripción o ID de tema no es un número válido.";
+        } catch (Exception e) {
+            System.err.println("Error al completar tema: " + e.getMessage());
+            return "Error al completar el tema: " + e.getMessage();
+        }
+    }
+    
 }

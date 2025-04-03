@@ -619,7 +619,7 @@ public class AdministradorServiceImpl implements AdministradorService {
                         rs.getString("telefono"),
                         rs.getString("direccion"),
                         rs.getString("estatus"),
-                        rs.getBytes("cedula_pdf"));
+                        rs.getString("cedula_pdf"));
                 instructor.setId(rs.getInt("id_usuario"));
                 return instructor;
             });

@@ -1,6 +1,5 @@
 package mx.utng.finer_back_end.Publicos.Services;
 
-import org.hibernate.annotations.processing.SQL;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import mx.utng.finer_back_end.Publicos.Repository.PublicosRepository;

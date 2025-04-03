@@ -22,6 +22,7 @@ import mx.utng.finer_back_end.Alumnos.Documentos.CursoInscritoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoNombreAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Implement.CursoAlumnoImplement;
+import mx.utng.finer_back_end.Alumnos.Services.AlumnoService;
 import mx.utng.finer_back_end.Alumnos.Services.CursoAlumnoService;
 import mx.utng.finer_back_end.Alumnos.Services.PdfGenerationService;
 
@@ -35,6 +36,9 @@ public class CursoAlumnoController {
 
     @Autowired
     private CursoAlumnoService cursoService;
+
+    @Autowired
+    private AlumnoService alumnoService;
 
     @Autowired
     private CursoAlumnoImplement cursoAlumnoService;
@@ -78,6 +82,33 @@ public class CursoAlumnoController {
         }
     }
 
+    /**
+     * Endpoint para completar un tema en un curso.
+     * 
+     * Este método recibe el ID de inscripción y el ID del tema a completar,
+     * y devuelve la información del tema completado.
+     *
+     * @param idInscripcion ID de inscripción del alumno en el curso.
+     * @param idTema        ID del tema a completar.
+     * @return ResponseEntity con la información del tema completado o un mensaje
+     *         de error en caso de problemas.
+     * 
+     *         Posibles respuestas:
+     *         - `200 OK`: Devuelve la información del tema completado.
+     *         - `404 Not Found`: Si no se encontró el curso o el tema.
+     *         - `500 Internal Server Error`: Si ocurre un error interno en
+     *         el servidor.
+     */
+    @GetMapping("/completar-tema/{idInscripcion}/{idTema}")
+    public ResponseEntity<?> completarTema(@PathVariable String idInscripcion, @PathVariable String idTema) {
+        try {
+            String resultado = alumnoService.completarTema(idInscripcion, idTema);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error interno del servidor: " + e.getMessage());
+        }
+    }
+    
     /**
      * Endpoint para inscribir a un alumno en un curso.
      * 
