@@ -36,10 +36,10 @@ public class AlumnoModificarService {
         }
     }
     public ResponseEntity<String> actualizarPerfilAlumno(Integer idUsuario, String nombre, String apellidoPaterno, 
-    String apellidoMaterno, String nombreUsuario, String correo, String contrasenia) {
+    String apellidoMaterno, String nombreUsuario, String correo, String contrasenia, Boolean actualizar_contrasenia) {
 try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
     // Llamar a la función de PostgreSQL para actualizar el perfil
-    String sql = "SELECT actualizar_perfil_alumno(?, ?, ?, ?, ?, ?, ?)";
+    String sql = "SELECT actualizar_perfil_alumno(?, ?, ?, ?, ?, ?, ?, ?)";
     
     try (PreparedStatement statement = connection.prepareStatement(sql)) {
         statement.setInt(1, idUsuario);
@@ -49,6 +49,7 @@ try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
         statement.setString(5, nombreUsuario);
         statement.setString(6, correo);
         statement.setString(7, contrasenia);
+        statement.setBoolean(8, actualizar_contrasenia);
         
         statement.execute();
         
