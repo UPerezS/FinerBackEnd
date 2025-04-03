@@ -15,10 +15,10 @@ public class InstructorModificarService {
     private JdbcTemplate jdbcTemplate;
 
     public ResponseEntity<String> actualizarPerfilInstructor(Integer idUsuario, String nombre, String apellidoPaterno,
-    String apellidoMaterno, String correo, String telefono, String direccion, String nombreUsuario, String contrasenia) {
+    String apellidoMaterno, String correo, String telefono, String direccion, String nombreUsuario, String contrasenia, Boolean actualizar_contrasenia) {
 try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
     // Llamar a la función de PostgreSQL para actualizar el perfil del instructor
-    String sql = "SELECT actualizar_perfil_instructor(?, ?, ?, ?, ?, ?, ?, ?,?)";
+    String sql = "SELECT actualizar_perfil_instructor(?, ?, ?, ?, ?, ?, ?, ?,?,?)";
     
     try (PreparedStatement statement = connection.prepareStatement(sql)) {
         statement.setInt(1, idUsuario);
@@ -30,6 +30,7 @@ try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
         statement.setString(7, telefono);
         statement.setString(8, direccion);
         statement.setString(9, contrasenia);
+        statement.setBoolean(10, actualizar_contrasenia);
         
         statement.execute();
         

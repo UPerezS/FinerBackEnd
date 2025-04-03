@@ -66,12 +66,13 @@ public class InstructorController {
             @RequestParam String nombreUsuario,
             @RequestParam String telefono,
             @RequestParam String direccion,
-            @RequestParam String contrasenia
+            @RequestParam String contrasenia,
+            @RequestParam Boolean actualizar_contrasenia
             ) {
         try {
             ResponseEntity<String> mensaje = instructorModificarService.actualizarPerfilInstructor(idUsuario, nombre,
                     apellidoPaterno, apellidoMaterno,
-                    nombreUsuario, correo, telefono, direccion, contrasenia);
+                    nombreUsuario, correo, telefono, direccion, contrasenia,actualizar_contrasenia);
             return mensaje;
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error de conexión" + e.getMessage());

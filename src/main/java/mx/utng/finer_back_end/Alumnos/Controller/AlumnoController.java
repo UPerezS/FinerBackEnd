@@ -46,8 +46,8 @@ public class AlumnoController {
     @PutMapping("/editar-cuenta")
     public ResponseEntity<String> actualizarPerfilAlumno(
         @RequestParam Integer idUsuario,
-        @RequestParam String nombre, @RequestParam 
-        String apellidoPaterno, 
+        @RequestParam String nombre, 
+        @RequestParam String apellidoPaterno, 
         @RequestParam String apellidoMaterno,
         @RequestParam String correo,
         @RequestParam String contrasenia,
