@@ -40,7 +40,8 @@ public class InstructorController {
      * @return Respuesta con el mensaje de éxito o error
      */
     @PostMapping("/crear-cuenta")
-    public ResponseEntity<String> crearCuentainstructor(@RequestParam String nombre,
+    public ResponseEntity<Map<String, Object>> crearCuentainstructor(
+            @RequestParam String nombre,
             @RequestParam String apellidoPaterno,
             @RequestParam String apellidoMaterno,
             @RequestParam String correo,
@@ -49,13 +50,16 @@ public class InstructorController {
             @RequestParam String telefono,
             @RequestParam String direccion,
             @RequestParam String cedula) {
-        try {
 
-            ResponseEntity<String> mensaje = instructorService.registrarInstructor(nombre, apellidoPaterno,
-                    apellidoMaterno, correo, contrasenia, nombreUsuario, telefono, direccion, cedula);
-            return mensaje;
+        try {
+            return instructorService.registrarInstructor(
+                    nombre, apellidoPaterno, apellidoMaterno, correo,
+                    contrasenia, nombreUsuario, telefono, direccion, cedula);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error de conexión: " + e.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error de conexión: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
         }
     }
 
