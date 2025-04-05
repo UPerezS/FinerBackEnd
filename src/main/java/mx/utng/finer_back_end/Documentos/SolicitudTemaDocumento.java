@@ -11,7 +11,7 @@ public class SolicitudTemaDocumento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_solicitud_tema")
-    private Long idSolicitudTema;
+    private Integer idSolicitudTema;
 
     @NotNull
     @Column(name = "id_solicitud_curso")
@@ -24,17 +24,24 @@ public class SolicitudTemaDocumento {
     @Column(name = "contenido", columnDefinition = "TEXT")
     private String contenido;
 
-    @Lob
-    @Column(name = "imagen")
-    private byte[] imagen;
 
+    // Constructor vacío
+    public SolicitudTemaDocumento() {
+    }
+    // Constructor con todos los parámetros
+    public SolicitudTemaDocumento(Integer idSolicitudTema, Integer idSolicitudCurso, String nombreTema, String contenido) {
+        this.idSolicitudTema =idSolicitudTema;
+        this.idSolicitudCurso = idSolicitudCurso;
+        this.nombreTema = nombreTema;
+        this.contenido = contenido;
+    }
     // Getters y Setters
 
-    public Long getIdSolicitudTema() {
+    public Integer getIdSolicitudTema() {
         return idSolicitudTema;
     }
 
-    public void setIdSolicitudTema(Long idSolicitudTema) {
+    public void setIdSolicitudTema(Integer idSolicitudTema) {
         this.idSolicitudTema = idSolicitudTema;
     }
 
@@ -62,11 +69,4 @@ public class SolicitudTemaDocumento {
         this.contenido = contenido;
     }
 
-    public byte[] getImagen() {
-        return imagen;
-    }
-
-    public void setImagen(byte[] imagen) {
-        this.imagen = imagen;
-    }
 }
