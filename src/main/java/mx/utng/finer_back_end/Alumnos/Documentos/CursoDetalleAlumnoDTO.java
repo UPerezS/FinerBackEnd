@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CursoDetalleAlumnoDTO {
+    private Integer idCurso;
     private String titulo;
     private String descripcion;
     private String instructor;

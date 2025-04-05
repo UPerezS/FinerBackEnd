@@ -20,7 +20,6 @@ import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Services.CursoAlumnoService;
 import mx.utng.finer_back_end.Documentos.TemaDocumento;
 
-
 @Service
 public class CursoAlumnoImplement implements CursoAlumnoService {
 
@@ -36,25 +35,23 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
     @Override
     @Transactional
     public List<CursoDetalleAlumnoDTO> getCurso(String tituloCurso) {
-        List<Object[]> resultados = cursoDao.verCursoDetalles(tituloCurso);  // Pasar un String en lugar de Integer
+        List<Object[]> resultados = cursoDao.verCursoDetalles(tituloCurso); // Pasar un String en lugar de Integer
         List<CursoDetalleAlumnoDTO> detalles = new ArrayList<>();
-    
+
         for (Object[] row : resultados) {
             CursoDetalleAlumnoDTO cursoDetalle = new CursoDetalleAlumnoDTO(
-                    (String) row[0],
+                    (Integer) row[0],
                     (String) row[1],
                     (String) row[2],
                     (String) row[3],
-                    (Integer) row[4],
+                    (String) row[4],
                     (Integer) row[5],
-                    (String) row[6]
-            );
+                    (Integer) row[6],
+                    (String) row[7]);
             detalles.add(cursoDetalle);
         }
         return detalles;
     }
-    
-
 
     @Override
     @Transactional
@@ -196,6 +193,7 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
 
         return cursos;
     }
+
     @Override
     @Transactional
     public List<CursoInscritoDTO> verCursosDelAlumno(Integer idAlumno) {
@@ -204,13 +202,13 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
 
         for (Object[] row : resultados) {
             CursoInscritoDTO curso = new CursoInscritoDTO(
-                (Integer) row[0],           // id_curso
-                (String) row[1],            // titulo_curso
-                (String) row[2],            // descripcion
-                (Integer) row[3],           // id_categoria
-                (String) row[4],            // nombre_categoria
-                ((Timestamp) row[5]).toLocalDateTime(), // fecha_inscripcion
-                (String) row[6]             // estatus_inscripcion
+                    (Integer) row[0], // id_curso
+                    (String) row[1], // titulo_curso
+                    (String) row[2], // descripcion
+                    (Integer) row[3], // id_categoria
+                    (String) row[4], // nombre_categoria
+                    ((Timestamp) row[5]).toLocalDateTime(), // fecha_inscripcion
+                    (String) row[6] // estatus_inscripcion
             );
             cursosInscritos.add(curso);
         }
@@ -222,5 +220,4 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
         return cursoDao.esAlumno(idUsuario);
     }
 
-    
 }
