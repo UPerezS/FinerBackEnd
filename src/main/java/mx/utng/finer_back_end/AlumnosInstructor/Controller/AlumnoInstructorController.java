@@ -68,6 +68,7 @@ public class AlumnoInstructorController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor");
         }
     }
+    
     @GetMapping("/usuarios/{idUsuario}")
     public ResponseEntity<UsuarioDocumento> obtenerDatosUsuario(@PathVariable Integer idUsuario) {
         UsuarioDocumento usuario = usuarioInstructorService.obtenerDatosUsuario(idUsuario);
