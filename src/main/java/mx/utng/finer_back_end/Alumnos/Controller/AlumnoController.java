@@ -53,6 +53,7 @@ public class AlumnoController {
     }
 
     @PutMapping("/editar-cuenta")
+
     public ResponseEntity<Map<String, Object>> actualizarPerfilAlumno(
             @RequestParam Integer idUsuario,
             @RequestParam String nombre,
@@ -72,6 +73,7 @@ public class AlumnoController {
             response.put("success", false);
             response.put("message", "Error de conexión: " + e.getMessage());
             return ResponseEntity.status(500).body(response);
+
         }
     }
 

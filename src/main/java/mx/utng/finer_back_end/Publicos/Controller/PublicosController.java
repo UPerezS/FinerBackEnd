@@ -1,13 +1,16 @@
 package mx.utng.finer_back_end.Publicos.Controller;
 
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
+import mx.utng.finer_back_end.AlumnosInstructor.Documentos.CursoDetalleProgresoDTO;
 import mx.utng.finer_back_end.Publicos.Documentos.CursoDetalleDTO;
 import mx.utng.finer_back_end.Publicos.Documentos.RecuperarContraseniaDTO;
 import mx.utng.finer_back_end.Publicos.Documentos.VerCategoriasDTO;
+import mx.utng.finer_back_end.Publicos.Documentos.verIdInscripcionDTO;
 import mx.utng.finer_back_end.Publicos.Services.EmailService;
 import mx.utng.finer_back_end.Publicos.Services.PublicosService;
 import mx.utng.finer_back_end.Publicos.Services.VerCategoriaService;
 import mx.utng.finer_back_end.Publicos.Services.VerCursoService;
+import mx.utng.finer_back_end.Publicos.Services.verInscripcionIdService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -27,6 +30,8 @@ public class PublicosController {
 
     @Autowired
     private VerCategoriaService categoriaService;
+    @Autowired
+    private verInscripcionIdService verInscripcionIdService;
     
     private static final SecureRandom random = new SecureRandom();
     public static String tokenGenerado = null;
@@ -230,6 +235,23 @@ public ResponseEntity<Boolean> recuperarContrasenia(@RequestBody RecuperarContra
     }
 }
 
+@GetMapping("/verIdInscripcion/{idUsuario}/{idCurso}")
+public ResponseEntity<?> obtenerIdInscripcion(@PathVariable Integer idUsuario, @PathVariable Integer idCurso) {
+   try {
+            List<verIdInscripcionDTO> progreso = verInscripcionIdService.obtenerIdInscripcion(idUsuario, idCurso);
+   
+            if (progreso.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encontró el id");
+            }
+   
+            return ResponseEntity.ok(progreso);
+        } catch (Exception e) {
+            // Imprimir detalles de la excepción para depuración
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error interno del servidor: " + e.getMessage());
+        }
+    }
 
 
 }

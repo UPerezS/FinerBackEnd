@@ -36,7 +36,7 @@ public class AlumnoNombreController {
             @RequestParam String orden) {
 
         try {
-            // Llamada al servicio pasando tanto nombre como orden
+           
             List<AlumnoDetalleNombreDTO> alumnos = alumnoNombreService.filtrarAlumnoNombre(nombre, orden);
 
             if (alumnos.isEmpty()) {
@@ -45,7 +45,7 @@ public class AlumnoNombreController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
-            // Devolver los alumnos encontrados en la respuesta
+            
             return ResponseEntity.ok(alumnos);
 
         } catch (Exception e) {

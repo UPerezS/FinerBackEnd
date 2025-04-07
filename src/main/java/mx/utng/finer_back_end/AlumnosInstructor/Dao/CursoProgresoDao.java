@@ -12,5 +12,6 @@ public interface CursoProgresoDao extends JpaRepository<CursoDocumento,Long> {
 
     @Query(value = "SELECT obtener_progreso_curso(:idEstudiante, :idCurso)", nativeQuery = true)
     Float verProgresoAlumno(@Param("idEstudiante") Integer idEstudiante, @Param("idCurso") Integer idCurso);
+    
 
 }
