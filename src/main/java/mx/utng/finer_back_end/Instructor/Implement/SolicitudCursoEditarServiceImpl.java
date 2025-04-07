@@ -30,7 +30,7 @@ public class SolicitudCursoEditarServiceImpl implements SolicitudCursoEditarServ
             );
             
             // Determine new status
-            String newStatus = "rechazada".equals(currentStatus) ? "en revision" : currentStatus;
+            String newStatus = "rechazada".equals(currentStatus) ? "pendiente" : currentStatus;
             
             // Perform update
             int updated = jdbcTemplate.update(
