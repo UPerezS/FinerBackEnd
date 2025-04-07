@@ -237,22 +237,28 @@ public class PublicosController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
-
     @GetMapping("/verIdInscripcion/{idUsuario}/{idCurso}")
     public ResponseEntity<?> obtenerIdInscripcion(@PathVariable Integer idUsuario, @PathVariable Integer idCurso) {
         try {
             List<verIdInscripcionDTO> progreso = verInscripcionIdService.obtenerIdInscripcion(idUsuario, idCurso);
 
             if (progreso.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encontró el id");
+                // Respuesta de error en formato JSON
+                Map<String, Object> response = new HashMap<>();
+                response.put("mensaje", "No se encontró el id");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
-            return ResponseEntity.ok(progreso);
+            return ResponseEntity.ok(progreso); // Esto sí será JSON si DTO está bien definido
         } catch (Exception e) {
-            // Imprimir detalles de la excepción para depuración
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error interno del servidor: " + e.getMessage());
+
+            // Error interno en formato JSON
+            Map<String, Object> error = new HashMap<>();
+            error.put("mensaje", "Error interno del servidor");
+            error.put("detalle", e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
 
