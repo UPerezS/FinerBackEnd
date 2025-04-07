@@ -10,8 +10,8 @@ import mx.utng.finer_back_end.Instructor.Documentos.CursoDetalleCategoriaDTO;
 import mx.utng.finer_back_end.Instructor.Services.CursoCategoriaService;
 
 @Service
-public class CursoCategoriaImplement implements CursoCategoriaService{
-     @Autowired
+public class CursoCategoriaImplement implements CursoCategoriaService {
+    @Autowired
     private CursoCategoriaDao cursoCategoriaDao;
 
     @Override
@@ -21,17 +21,16 @@ public class CursoCategoriaImplement implements CursoCategoriaService{
 
         for (Object[] row : resultados) {
             CursoDetalleCategoriaDTO dto = new CursoDetalleCategoriaDTO(
-                (String) row[0], // titulo_curso
-                (String) row[1], // descripcion
-                (String) row[2], // nombre_instructor
-                (String) row[3], // apellido_paterno
-                (String) row[4], // apellido_materno
-                (String) row[5]  // nombre_categoria
-            );
+                    (String) row[0], // titulo_curso
+                    (String) row[1], // descripcion
+                    (String) row[2], // nombre_instructor
+                    (String) row[3], // apellido_paterno
+                    (String) row[4], // apellido_materno
+                    (String) row[5], // nombre_categoria
+                    (String) row[6]);
             detalles.add(dto);
         }
         return detalles;
     }
 
-    
 }

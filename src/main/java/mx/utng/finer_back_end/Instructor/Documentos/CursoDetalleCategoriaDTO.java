@@ -17,5 +17,6 @@ public class CursoDetalleCategoriaDTO {
     private String apellidoPaterno;
     private String apellidoMaterno;
     private String nombreCategoria;
+    private String imagen;
 
 }
