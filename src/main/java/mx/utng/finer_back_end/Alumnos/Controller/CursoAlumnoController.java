@@ -109,7 +109,7 @@ public class CursoAlumnoController {
             return ResponseEntity.status(500).body("Error interno del servidor: " + e.getMessage());
         }
     }
-    
+
     /**
      * Endpoint para inscribir a un alumno en un curso.
      * 
@@ -237,32 +237,31 @@ public class CursoAlumnoController {
      *         certificado.
      */
     @GetMapping("/certificado/{idInscripcion}")
-public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer idInscripcion) {
-    try {
-        CertificadoDetalleDTO certificadoDetalles = cursoService.obtenerDetallesCertificado(idInscripcion);
+    public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer idInscripcion) {
+        try {
+            CertificadoDetalleDTO certificadoDetalles = cursoService.obtenerDetallesCertificado(idInscripcion);
 
-        if (certificadoDetalles == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(("No se encontraron detalles para el certificado del alumno con la inscripción: "
-                            + idInscripcion).getBytes());
+            if (certificadoDetalles == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(("No se encontraron detalles para el certificado del alumno con la inscripción: "
+                                + idInscripcion).getBytes());
+            }
+
+            byte[] pdfContent = pdfGenerationService.generarCertificado(certificadoDetalles);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=certificado_" + idInscripcion + ".pdf");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdfContent);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("Error al generar el certificado: " + e.getMessage()).getBytes());
         }
-
-        byte[] pdfContent = pdfGenerationService.generarCertificado(certificadoDetalles);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=certificado_" + idInscripcion + ".pdf");
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdfContent);
-
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(("Error al generar el certificado: " + e.getMessage()).getBytes());
     }
-}
-
 
     /**
      * Endpoint para obtener los temas de un curso.
@@ -301,7 +300,6 @@ public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer idInscrip
         }
     }
 
-
     @GetMapping("/curso/nombre/{nombreCurso}")
     public ResponseEntity<?> buscarCursoNombre(@PathVariable String nombreCurso) {
         try {
@@ -309,7 +307,7 @@ public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer idInscrip
             if (cursos.isEmpty()) {
                 return ResponseEntity.status(404).body("Curso no encontrado");
             }
-            return ResponseEntity.ok(cursos);  // Si se encuentran cursos, retornamos los datos
+            return ResponseEntity.ok(cursos); // Si se encuentran cursos, retornamos los datos
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error en la conexión: " + e.getMessage());
         }
@@ -317,6 +315,7 @@ public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer idInscrip
 
     /**
      * Endpoint para buscar un curso por su categoria.
+     * 
      * @param nombreCurso
      * @return
      */
@@ -327,39 +326,38 @@ public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer idInscrip
             if (cursos.isEmpty()) {
                 return ResponseEntity.status(404).body("Curso no encontrado");
             }
-            return ResponseEntity.ok(cursos);  // Si se encuentran cursos, retornamos los datos
+            return ResponseEntity.ok(cursos); // Si se encuentran cursos, retornamos los datos
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error en la conexión: " + e.getMessage());
         }
     }
 
-
-
-        @GetMapping("/continuarCurso/{idCurso}/{idUsuarioAlumno}")
+    @GetMapping("/continuarCurso/{idCurso}/{idUsuarioAlumno}")
     public ResponseEntity<List<ContinuarCursoDTO>> continuarCurso(
-        @PathVariable Integer idCurso, 
-        @PathVariable Integer idUsuarioAlumno
-    ) {
-        try{
-        List<ContinuarCursoDTO> temasPendientes = cursoService.continuarCurso(idCurso, idUsuarioAlumno);
-        if (temasPendientes == null || temasPendientes.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontró el curso: " + idCurso);
-        }
-        return ResponseEntity.ok(temasPendientes);
+            @PathVariable Integer idCurso,
+            @PathVariable Integer idUsuarioAlumno) {
+        try {
+            List<ContinuarCursoDTO> temasPendientes = cursoService.continuarCurso(idCurso, idUsuarioAlumno);
+            if (temasPendientes == null || temasPendientes.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No se encontró el curso: " + idCurso);
+            }
+            return ResponseEntity.ok(temasPendientes);
 
-    } catch (DataAccessException e) {
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al acceder a la base de datos",
-                e);
-    } catch (ResponseStatusException e) {
-        throw e;
-    } catch (Exception e) {
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error inesperado", e);
+        } catch (DataAccessException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al acceder a la base de datos",
+                    e);
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error inesperado", e);
+        }
     }
-}
- /**
+
+    /**
      * Endpoint para obtener los cursos en los que está inscrito un alumno.
-     * Verifica primero si el ID corresponde a un alumno antes de mostrar los cursos.
+     * Verifica primero si el ID corresponde a un alumno antes de mostrar los
+     * cursos.
      * 
      * @param idAlumno ID del alumno del cual se quieren obtener los cursos
      * @return ResponseEntity con la lista de cursos o un mensaje de error
@@ -371,37 +369,38 @@ public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer idInscrip
             Boolean esAlumno = cursoService.esAlumno(idAlumno);
             if (!esAlumno) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("El ID proporcionado no corresponde a un alumno");
+                        .body("El ID proporcionado no corresponde a un alumno");
             }
 
             List<CursoInscritoDTO> cursosInscritos = cursoService.verCursosDelAlumno(idAlumno);
-            
+
             if (cursosInscritos.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("No se encontraron cursos inscritos para el alumno con ID: " + idAlumno);
+                        .body("No se encontraron cursos inscritos para el alumno con ID: " + idAlumno);
             }
-            
+
             return ResponseEntity.ok(cursosInscritos);
         } catch (DataAccessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al acceder a la base de datos: " + e.getMessage());
+                    .body("Error al acceder a la base de datos: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error inesperado: " + e.getMessage());
+                    .body("Error inesperado: " + e.getMessage());
         }
     }
-
 
     @GetMapping("/cursos-finalizados/{idUsuarioAlumno}")
     public ResponseEntity<?> obtenerCursosFinalizadosPorAlumno(@PathVariable Integer idUsuarioAlumno) {
         List<CursoFinalizadoDTO> cursos = cursoAlumnoService.obtenerCursosFinalizadosPorAlumno(idUsuarioAlumno);
-    
+
         if (cursos == null || cursos.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("No se encontraron cursos finalizados para el alumno con ID: " + idUsuarioAlumno);
+            Map<String, Object> respuesta = new HashMap<>();
+            respuesta.put("mensaje", "No se encontraron cursos finalizados para el alumno con ID: " + idUsuarioAlumno);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(respuesta);
         } else {
-            return ResponseEntity.ok(cursos);
+            Map<String, Object> respuesta = new HashMap<>();
+            respuesta.put("cursos", cursos);
+            return ResponseEntity.ok(respuesta);
         }
     }
 
