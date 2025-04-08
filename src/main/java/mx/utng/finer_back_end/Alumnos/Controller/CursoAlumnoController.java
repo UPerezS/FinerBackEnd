@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import mx.utng.finer_back_end.Alumnos.Documentos.CertificadoDetalleDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.ContinuarCursoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoDetalleAlumnoDTO;
+import mx.utng.finer_back_end.Alumnos.Documentos.CursoFinalizadoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoInscritoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoNombreAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
@@ -236,32 +237,32 @@ public class CursoAlumnoController {
      *         certificado.
      */
     @GetMapping("/certificado/{idInscripcion}")
-    public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer idInscripcion) {
-        try {
-            CertificadoDetalleDTO certificadoDetalles = cursoService.obtenerDetallesCertificado(idInscripcion);
+public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer idInscripcion) {
+    try {
+        CertificadoDetalleDTO certificadoDetalles = cursoService.obtenerDetallesCertificado(idInscripcion);
 
-            if (certificadoDetalles == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(("No se encontraron detalles para el certificado del alumno con la inscripción: "
-                                + idInscripcion).getBytes());
-            }
-
-            byte[] pdfContent = pdfGenerationService.generarCertificado(certificadoDetalles);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Content-Disposition", "attachment; filename=certificado_" + idInscripcion + ".pdf");
-
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .body(pdfContent);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(("Error al generar el certificado: " + e.getMessage()).getBytes());
+        if (certificadoDetalles == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(("No se encontraron detalles para el certificado del alumno con la inscripción: "
+                            + idInscripcion).getBytes());
         }
 
+        byte[] pdfContent = pdfGenerationService.generarCertificado(certificadoDetalles);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=certificado_" + idInscripcion + ".pdf");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfContent);
+
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(("Error al generar el certificado: " + e.getMessage()).getBytes());
     }
+}
+
 
     /**
      * Endpoint para obtener los temas de un curso.
@@ -390,5 +391,18 @@ public class CursoAlumnoController {
         }
     }
 
+
+    @GetMapping("/cursos-finalizados/{idUsuarioAlumno}")
+    public ResponseEntity<?> obtenerCursosFinalizadosPorAlumno(@PathVariable Integer idUsuarioAlumno) {
+        List<CursoFinalizadoDTO> cursos = cursoAlumnoService.obtenerCursosFinalizadosPorAlumno(idUsuarioAlumno);
+    
+        if (cursos == null || cursos.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("No se encontraron cursos finalizados para el alumno con ID: " + idUsuarioAlumno);
+        } else {
+            return ResponseEntity.ok(cursos);
+        }
+    }
 
 }

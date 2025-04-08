@@ -14,6 +14,7 @@ import mx.utng.finer_back_end.Alumnos.Dao.CursoAlumnoDao;
 import mx.utng.finer_back_end.Alumnos.Documentos.CertificadoDetalleDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.ContinuarCursoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoDetalleAlumnoDTO;
+import mx.utng.finer_back_end.Alumnos.Documentos.CursoFinalizadoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoInscritoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.CursoNombreAlumnoDTO;
 import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
@@ -220,4 +221,67 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
         return cursoDao.esAlumno(idUsuario);
     }
 
+    @Override
+    public List<CursoFinalizadoDTO> obtenerCursosFinalizadosPorAlumno(Integer idUsuarioAlumno) {
+        List<Object[]> resultados = cursoDao.obtenerCursosFinalizadosPorAlumno(idUsuarioAlumno);
+        List<CursoFinalizadoDTO> cursosFinalizados = new ArrayList<>();
+
+        if (resultados != null && !resultados.isEmpty()) {
+            for (Object[] fila : resultados) {
+                /*
+                 * Orden de columnas según la función:
+                 * 0: id_inscripcion (Integer)
+                 * 1: matricula (String)
+                 * 2: fecha_inscripcion (Timestamp)
+                 * 3: estatus_inscripcion (String)
+                 * 4: id_usuario_alumno (Integer)
+                 * 5: nombre_completo_alumno (String)
+                 * 6: id_curso (Integer)
+                 * 7: id_usuario_instructor (Integer)
+                 * 8: id_categoria (Integer)
+                 * 9: titulo_curso (String)
+                 * 10: descripcion_curso (String)
+                 * 11: nombre_categoria (String)
+                 * 12: nombre_completo_instructor (String)
+                 */
+                try {
+                    Integer idInscripcion = (Integer) fila[0];
+                    String matricula = (String) fila[1];
+                    // Convertir el timestamp a LocalDate:
+                    LocalDate fechaInscripcion = ((java.sql.Timestamp) fila[2]).toLocalDateTime().toLocalDate();
+                    String estatusInscripcion = (String) fila[3];
+                    Integer idUsuarioAlumnoVal = (Integer) fila[4];
+                    String nombreCompletoAlumno = (String) fila[5];
+                    Integer idCurso = (Integer) fila[6];
+                    Integer idUsuarioInstructor = (Integer) fila[7];
+                    Integer idCategoria = (Integer) fila[8];
+                    String tituloCurso = (String) fila[9];
+                    String descripcionCurso = (String) fila[10];
+                    String nombreCategoria = (String) fila[11];
+                    String nombreCompletoInstructor = (String) fila[12];
+
+                    CursoFinalizadoDTO dto = new CursoFinalizadoDTO(
+                        idInscripcion,
+                        matricula,
+                        fechaInscripcion,
+                        estatusInscripcion,
+                        idUsuarioAlumnoVal,
+                        nombreCompletoAlumno,
+                        idCurso,
+                        idUsuarioInstructor,
+                        idCategoria,
+                        tituloCurso,
+                        descripcionCurso,
+                        nombreCategoria,
+                        nombreCompletoInstructor
+                    );
+
+                    cursosFinalizados.add(dto);
+                } catch (ClassCastException e) {
+                    System.err.println("Error al mapear la fila: " + e.getMessage());
+                }
+            }
+        }
+        return cursosFinalizados;
+    }
 }
