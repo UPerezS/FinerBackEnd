@@ -365,24 +365,23 @@ public class CursoAlumnoController {
     @GetMapping("/mis-cursos/{idAlumno}")
     public ResponseEntity<?> verCursosDelAlumno(@PathVariable Integer idAlumno) {
         Map<String, Object> response = new HashMap<>();
-
+    
         try {
-            // Verificar si es un alumno
             Boolean esAlumno = cursoService.esAlumno(idAlumno);
             if (!esAlumno) {
                 response.put("mensaje", "El ID proporcionado no corresponde a un alumno");
-
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
             }
-
+    
             List<CursoInscritoDTO> cursosInscritos = cursoService.verCursosDelAlumno(idAlumno);
-
+    
             if (cursosInscritos.isEmpty()) {
-                response.put("mensaje", "No se encontraron cursos inscritos para el alumno con ID: " + idAlumno);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                response.put("mensaje", "El alumno no tiene cursos en proceso actualmente");
+                response.put("cursos", cursosInscritos); 
+                return ResponseEntity.ok(response);
             }
             return ResponseEntity.ok(cursosInscritos);
-
+    
         } catch (DataAccessException e) {
             response.put("mensaje", "Error al acceder a la base de datos");
             response.put("error", e.getMessage());
@@ -393,7 +392,6 @@ public class CursoAlumnoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
     @GetMapping("/cursos-finalizados/{idUsuarioAlumno}")
     public ResponseEntity<?> obtenerCursosFinalizadosPorAlumno(@PathVariable Integer idUsuarioAlumno) {
         List<CursoFinalizadoDTO> cursos = cursoAlumnoService.obtenerCursosFinalizadosPorAlumno(idUsuarioAlumno);
