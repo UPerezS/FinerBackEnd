@@ -546,12 +546,12 @@ public class AdministradorController {
         try {
             List<UsuarioDocumento> usuarios = administradorService.getAlumnos();
             if (usuarios.isEmpty()) {
-                return ResponseEntity.noContent().build(); // 204 No Content
+                return ResponseEntity.noContent().build();
             }
-            return ResponseEntity.ok(usuarios); // 200 OK
+            return ResponseEntity.ok(usuarios);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null); // 500 Internal Server Error
+                    .body(null); 
         }
     }
 
@@ -576,12 +576,12 @@ public class AdministradorController {
         try {
             List<UsuarioDocumento> usuarios = administradorService.getInstructores();
             if (usuarios.isEmpty()) {
-                return ResponseEntity.noContent().build(); // 204 No Content
+                return ResponseEntity.noContent().build();
             }
-            return ResponseEntity.ok(usuarios); // 200 OK
+            return ResponseEntity.ok(usuarios); 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null); // 500 Internal Server Error
+                    .body(null); 
         }
     }
 
