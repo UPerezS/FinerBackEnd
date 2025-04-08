@@ -92,7 +92,7 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
         if (resultados != null && !resultados.isEmpty()) {
             Object[] fila = resultados.get(0);
 
-            if (fila != null && fila.length >= 7) {
+            if (fila != null && fila.length >= 7){
                 try {
                     LocalDate fechaInscripcion;
                     if (fila[6] instanceof java.sql.Timestamp) {
@@ -114,7 +114,7 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
                             (String) fila[3],
                             (String) fila[4],
                             (String) fila[5],
-                            fechaInscripcion,
+                            ((Timestamp) fila[6]).toLocalDateTime().toLocalDate(),
                             LocalDate.now());
 
                     return certificadoDetalles;
@@ -122,18 +122,16 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
                     System.err.println("Error de conversión de tipo: " + e.getMessage());
                     e.printStackTrace(); // Para ver más detalles del error
                     return null;
+                }
+            } else {
                 
+                System.out.println("La fila no tiene la cantidad de columnas esperada.");
+                return null;
             }
         } else {
-            System.out.println("La fila no tiene la cantidad de columnas esperada.");
+            System.out.println("No se encontraron resultados para la inscripción " + idInscripcion);
             return null;
         }
-    }else
-
-    {
-        System.out.println("No se encontraron resultados para la inscripción " + idInscripcion);
-        return null;
-    }
     }
 
     public List<TemaDocumento> getTemas(Integer idCurso) {
