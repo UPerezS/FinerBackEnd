@@ -92,8 +92,21 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
         if (resultados != null && !resultados.isEmpty()) {
             Object[] fila = resultados.get(0);
 
-            if (fila != null && fila.length >= 8) {
+            if (fila != null && fila.length >= 7) {
                 try {
+                    LocalDate fechaInscripcion;
+                    if (fila[6] instanceof java.sql.Timestamp) {
+                        // Convertir Timestamp a LocalDate
+                        fechaInscripcion = ((java.sql.Timestamp) fila[6]).toLocalDateTime().toLocalDate();
+                    } else if (fila[6] instanceof java.sql.Date) {
+                        // Por si acaso el tipo cambia en el futuro
+                        fechaInscripcion = ((java.sql.Date) fila[6]).toLocalDate();
+                    } else {
+                        // Si es otro tipo, usar la fecha actual como fallback
+                        fechaInscripcion = LocalDate.now();
+                        System.out.println("Tipo de fecha no reconocido, usando fecha actual");
+                    }
+
                     CertificadoDetalleDTO certificadoDetalles = new CertificadoDetalleDTO(
                             (Integer) fila[0],
                             (String) fila[1],
@@ -101,22 +114,26 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
                             (String) fila[3],
                             (String) fila[4],
                             (String) fila[5],
-                            ((java.sql.Date) fila[6]).toLocalDate(),
+                            fechaInscripcion,
                             LocalDate.now());
 
                     return certificadoDetalles;
                 } catch (ClassCastException e) {
                     System.err.println("Error de conversión de tipo: " + e.getMessage());
+                    e.printStackTrace(); // Para ver más detalles del error
                     return null;
-                }
-            } else {
-                System.out.println("La fila no tiene la cantidad de columnas esperada.");
-                return null;
+                
             }
         } else {
-            System.out.println("No se encontraron resultados para la inscripción " + idInscripcion);
+            System.out.println("La fila no tiene la cantidad de columnas esperada.");
             return null;
         }
+    }else
+
+    {
+        System.out.println("No se encontraron resultados para la inscripción " + idInscripcion);
+        return null;
+    }
     }
 
     public List<TemaDocumento> getTemas(Integer idCurso) {
@@ -261,20 +278,19 @@ public class CursoAlumnoImplement implements CursoAlumnoService {
                     String nombreCompletoInstructor = (String) fila[12];
 
                     CursoFinalizadoDTO dto = new CursoFinalizadoDTO(
-                        idInscripcion,
-                        matricula,
-                        fechaInscripcion,
-                        estatusInscripcion,
-                        idUsuarioAlumnoVal,
-                        nombreCompletoAlumno,
-                        idCurso,
-                        idUsuarioInstructor,
-                        idCategoria,
-                        tituloCurso,
-                        descripcionCurso,
-                        nombreCategoria,
-                        nombreCompletoInstructor
-                    );
+                            idInscripcion,
+                            matricula,
+                            fechaInscripcion,
+                            estatusInscripcion,
+                            idUsuarioAlumnoVal,
+                            nombreCompletoAlumno,
+                            idCurso,
+                            idUsuarioInstructor,
+                            idCategoria,
+                            tituloCurso,
+                            descripcionCurso,
+                            nombreCategoria,
+                            nombreCompletoInstructor);
 
                     cursosFinalizados.add(dto);
                 } catch (ClassCastException e) {
