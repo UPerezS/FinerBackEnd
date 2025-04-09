@@ -392,7 +392,6 @@ public class CursoAlumnoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
     @GetMapping("/cursos-finalizados/{idUsuarioAlumno}")
     public ResponseEntity<?> obtenerCursosFinalizadosPorAlumno(@PathVariable Integer idUsuarioAlumno) {
         List<CursoFinalizadoDTO> cursos = cursoAlumnoService.obtenerCursosFinalizadosPorAlumno(idUsuarioAlumno);

@@ -12,7 +12,7 @@ import mx.utng.finer_back_end.Documentos.CursoDocumento;
 
 @Repository
 public interface SolicitudCursoDaoInstructor extends JpaRepository<CursoDocumento, Integer> {
-    @Query(value = "SELECT * FROM verCursosSolicitados(:estatus, :idInstructor)", nativeQuery = true)
+    @Query(value = "SELECT * FROM verCursoSolicitados(:estatus, :idInstructor)", nativeQuery = true)
     List<Object[]> verCursosSolicitados(@Param("estatus") String estatus, @Param("idInstructor") Integer idInstructor);
 
     @Query(value = "SELECT editar_solicitud_curso(:idSolicitudCurso, :idUsuarioInstructor, :tituloCursoSolicitado, "
