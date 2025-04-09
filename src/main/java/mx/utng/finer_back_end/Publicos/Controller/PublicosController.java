@@ -1,7 +1,5 @@
 package mx.utng.finer_back_end.Publicos.Controller;
 
-import mx.utng.finer_back_end.Alumnos.Documentos.PuntuacionAlumnoDTO;
-import mx.utng.finer_back_end.AlumnosInstructor.Documentos.CursoDetalleProgresoDTO;
 import mx.utng.finer_back_end.Publicos.Documentos.CursoDetalleDTO;
 import mx.utng.finer_back_end.Publicos.Documentos.RecuperarContraseniaDTO;
 import mx.utng.finer_back_end.Publicos.Documentos.VerCategoriasDTO;
@@ -71,6 +69,18 @@ public class PublicosController {
         }
     }
 
+    public ResponseEntity<String> enviarTokenSesion(@PathVariable String correoUsuario) {
+        tokenGenerado = generarTokenNumerico();
+
+        boolean enviado = emailService.mandarTokenNumericoSesion(correoUsuario, tokenGenerado);
+
+        if (enviado) {
+            return ResponseEntity.ok("Token enviado a " + correoUsuario);
+        } else {
+            return ResponseEntity.status(500).body("Error al enviar el token.");
+        }
+    }
+
     /**
      * Comparar los tokens que coincidan y mandar true o false en caso de que sean
      * iguales,
@@ -109,7 +119,7 @@ public class PublicosController {
                 String correo = (String) usuarioDatos[2];
 
                 try {
-                    this.enviarToken(correo);
+                    this.enviarTokenSesion(correo);
                 } catch (Exception e) {
                     return ResponseEntity.status(500)
                             .body(Map.of("error", "Ocurrió un error al enviar el correo: " + e.getMessage()));
@@ -199,6 +209,22 @@ public class PublicosController {
         }
     }
 
+    @PostMapping("/enviar-token")
+    public ResponseEntity<String> enviarTokenInicioSesion(@RequestBody Map<String, String> request) {
+        String correoUsuario = request.get("correoUsuario");
+        if (correoUsuario == null || correoUsuario.isEmpty()) {
+            return ResponseEntity.badRequest().body("El correoUsuario es obligatorio");
+        }
+
+        tokenGenerado = generarTokenNumerico();
+        boolean enviado = emailService.mandarTokenNumericoSesion(correoUsuario, tokenGenerado);
+        if (enviado) {
+            return ResponseEntity.ok("Token enviado a " + correoUsuario);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al enviar el token.");
+        }
+    }
+
     /**
      * Endpoint para recuperar (actualizar) la contraseña.
      * Se espera un JSON con "correo", "token" y "nuevaContrasenia".
@@ -237,6 +263,7 @@ public class PublicosController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
+
     @GetMapping("/verIdInscripcion/{idUsuario}/{idCurso}")
     public ResponseEntity<?> obtenerIdInscripcion(@PathVariable Integer idUsuario, @PathVariable Integer idCurso) {
         try {

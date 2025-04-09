@@ -51,19 +51,15 @@ public class SolicitudInstructorImplement implements SolicitudInstructorService 
      
      private void enviarCorreoRechazoInstructor(String correoUsuario, String motivoRechazo) {
          try {
-             // Creamos el mensaje MIME para permitir el uso de HTML
              MimeMessage mensaje = javaMailSender.createMimeMessage();
-             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true); // 'true' para permitir HTML y adjuntos
+             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true);
      
-             // Configuramos el remitente, destinatario y asunto
              helper.setFrom("finner.oficial.2025@gmail.com");
              helper.setTo(correoUsuario);
              helper.setSubject("Solicitud de instructor rechazada - Finer");
      
-             // Ruta de la imagen (se obtiene desde el directorio resources)
              String logoPath = getClass().getClassLoader().getResource("finer_logo.png").getPath();
              
-             // Cuerpo del mensaje con formato HTML
              String cuerpoMensaje = "<html>" +
                      "<body style=\"font-family: Arial, sans-serif; background-color: #f5f5f5; color: #333; padding: 20px;\">" +
                      "<div style=\"background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);\">" +
@@ -78,7 +74,6 @@ public class SolicitudInstructorImplement implements SolicitudInstructorService 
                      "<p>Atentamente,<br/>El equipo de Finer</p>" +
                      "<p style=\"font-style: italic; color: #6c757d;\">P.D. ¡Esperamos poder contar con su participación en una futura ocasión!</p>" +
                      
-                     // Insertamos la imagen al final del correo
                      "<p style=\"text-align:center;\">" +
                      "<img src=\"cid:finerLogo\" alt=\"Finer Logo\" style=\"max-width: 200px;\" />" +
                      "</p>" +
@@ -86,18 +81,13 @@ public class SolicitudInstructorImplement implements SolicitudInstructorService 
                      "</body>" +
                      "</html>";
      
-             // Establecemos el contenido HTML en el mensaje
-             helper.setText(cuerpoMensaje, true);  // El 'true' indica que el contenido es HTML
+             helper.setText(cuerpoMensaje, true); 
      
-             // Adjuntamos la imagen al correo usando FileDataSource
              FileDataSource dataSource = new FileDataSource(logoPath);
-             helper.addInline("finerLogo", dataSource);  // 'finerLogo' es el ID que utilizamos en el src del HTML
-     
-             // Enviamos el correo
+             helper.addInline("finerLogo", dataSource);  
              javaMailSender.send(mensaje);
      
          } catch (Exception e) {
-             // Solo registramos la excepción pero no interrumpimos el flujo
              System.err.println("Error al enviar correo de rechazo al usuario: " + e.getMessage());
          }
      }
