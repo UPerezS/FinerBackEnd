@@ -15,9 +15,10 @@ public interface EvaluacionDao extends JpaRepository<Evaluacion, Integer> {
      * @param tituloEvaluacion el título de la evaluación
      * @return El ID de la evaluación creada.
      */
-    @Query(value = "INSERT INTO Evaluacion (id_curso, titulo_evaluacion, fecha_creacion) " +
-                   "VALUES (:idCurso, :tituloEvaluacion, CURRENT_DATE) RETURNING id_evaluacion", 
-           nativeQuery = true)
-    Integer generarEvaluacion(@Param("idCurso") Integer idCurso, 
+    @Query(value = "SELECT generar_evaluacion(:idCurso, :tituloEvaluacion)", nativeQuery = true)
+    Integer generarEvaluacion(@Param("idCurso") Integer idCurso,
                               @Param("tituloEvaluacion") String tituloEvaluacion);
+    
+
+                              
 }
