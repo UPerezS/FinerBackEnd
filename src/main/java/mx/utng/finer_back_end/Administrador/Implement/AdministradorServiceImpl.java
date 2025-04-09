@@ -179,22 +179,68 @@ public class AdministradorServiceImpl implements AdministradorService {
      */
     private void enviarCorreoRechazo(String correoInstructor, String motivoRechazo, String tituloCurso) {
         try {
-            SimpleMailMessage mensaje = new SimpleMailMessage();
-            mensaje.setFrom("finner.oficial.2025@gmail.com");
-            mensaje.setTo(correoInstructor);
-            mensaje.setSubject("Solicitud de curso rechazada - Finner");
-
-            String cuerpoMensaje = "Estimado instructor,\n\n" +
-                    "Le informamos que su solicitud para el curso \"" + tituloCurso + "\" ha sido rechazada.\n\n" +
-                    "Motivo del rechazo: " + motivoRechazo + "\n\n" +
-                    "Si tiene alguna duda o desea más información, por favor contacte al equipo administrativo.\n\n" +
-                    "Atentamente,\n" +
-                    "El equipo de Finner";
-
-            mensaje.setText(cuerpoMensaje);
-
-            javaMailSender.send(mensaje);
-        } catch (Exception e) {
+            // Crear un mensaje MIME en lugar de SimpleMailMessage para soportar HTML
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            
+            helper.setFrom("finner.oficial.2025@gmail.com");
+            helper.setTo(correoInstructor);
+            helper.setSubject("Solicitud de curso rechazada - Finner");
+            
+            // Plantilla HTML para el correo
+            String cuerpoHTML = 
+                    "<!DOCTYPE html>" +
+                    "<html>" +
+                    "<head>" +
+                    "    <meta charset=\"UTF-8\">" +
+                    "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                    "    <style>" +
+                    "        * { font-family: Arial, sans-serif; }" +
+                    "        .container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
+                    "        .header { background-color: #3b5998; padding: 20px; text-align: center; color: white; border-radius: 5px 5px 0 0; }" +
+                    "        .content { background-color: #f7f7f7; padding: 20px; border-radius: 0 0 5px 5px; }" +
+                    "        .course-title { font-weight: bold; color: #3b5998; }" +
+                    "        .rejection-box { background-color: #fff3f3; border-left: 4px solid #ff5252; padding: 10px; margin: 15px 0; }" +
+                    "        .footer { margin-top: 20px; text-align: center; font-size: 12px; color: #888; }" +
+                    "        .button { display: inline-block; background-color: #3b5998; color: white; padding: 10px 15px; " +
+                    "                 text-decoration: none; border-radius: 4px; margin-top: 15px; }" +
+                    "        .divider { border-top: 1px solid #ddd; margin: 20px 0; }" +
+                    "    </style>" +
+                    "</head>" +
+                    "<body>" +
+                    "    <div class=\"container\">" +
+                    "        <div class=\"header\">" +
+                    "            <h2>Finner - Plataforma Educativa</h2>" +
+                    "        </div>" +
+                    "        <div class=\"content\">" +
+                    "            <h3>Estimado Instructor,</h3>" +
+                    "            <p>Le informamos que su solicitud para el curso <span class=\"course-title\">\"" + tituloCurso + "\"</span> ha sido revisada.</p>" +
+                    "            <p>Lamentablemente, no podemos aprobar esta solicitud en su estado actual.</p>" +
+                    "            <div class=\"rejection-box\">" +
+                    "                <p><strong>Motivo del rechazo:</strong><br>" + motivoRechazo + "</p>" +
+                    "            </div>" +
+                    "            <p>Le animamos a realizar las modificaciones necesarias y volver a presentar su solicitud.</p>" +
+                    "            <p>Si tiene alguna pregunta o necesita orientación adicional, no dude en contactarnos.</p>" +
+                   
+                    "            <div class=\"divider\"></div>" +
+                    "            <p>Agradecemos su interés en formar parte de nuestra plataforma educativa.</p>" +
+                    "            <p>Atentamente,<br>El equipo de Finner</p>" +
+                    "        </div>" +
+                    "        <div class=\"footer\">" +
+                    "            <p>© " + java.time.Year.now().getValue() + " Finner. Todos los derechos reservados.</p>" +
+                    "            <p>Este es un correo automático, por favor no responda directamente a esta dirección.</p>" +
+                    "        </div>" +
+                    "    </div>" +
+                    "</body>" +
+                    "</html>";
+            
+            // Establecer el contenido HTML
+            helper.setText(cuerpoHTML, true);
+            
+            // Enviar el correo
+            javaMailSender.send(mimeMessage);
+            
+        }catch (Exception e) {
             // Solo registramos la excepción pero no interrumpimos el flujo
             System.err.println("Error al enviar correo de rechazo: " + e.getMessage());
         }
