@@ -209,7 +209,7 @@ public class PublicosController {
         }
     }
 
-    @PostMapping("/enviar-token")
+    @PostMapping("/enviar-token/inicioSesion")
     public ResponseEntity<String> enviarTokenInicioSesion(@RequestBody Map<String, String> request) {
         String correoUsuario = request.get("correoUsuario");
         if (correoUsuario == null || correoUsuario.isEmpty()) {
