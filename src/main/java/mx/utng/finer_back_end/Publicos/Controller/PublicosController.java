@@ -90,9 +90,11 @@ public class PublicosController {
      * @return true si son iguales, si no false
      */
     @GetMapping("/comparar")
-    private Boolean compararToken(@RequestParam String token) {
-        return tokenGenerado != null && token.equals(tokenGenerado);
+    private Map<String, Boolean> compararToken(@RequestParam String token) {
+        boolean resultado = tokenGenerado != null && token.equals(tokenGenerado);
+        return Map.of("resultado", resultado);
     }
+    
 
     /**
      * Método para iniciar sesión en la aplicación
